@@ -1,0 +1,3 @@
+reset;
+model trump.mod;
+data trump.dat;
