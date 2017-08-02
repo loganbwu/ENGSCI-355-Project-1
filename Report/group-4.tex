@@ -83,68 +83,69 @@ $$v_w \in \{0, 1\} \quad\forall w\in W \cup \{\text{Sun}_\text{dummy}\}$$
 \subsection{Constraints}
 
 Create a dummy week 0 that is equal to week 6.
-\begin{equation}
+\begin{align}
   x_{s, 0, d} = x_{s, |W|, d} \quad\forall s\in S,\ d\in D
-\end{equation}
+\end{align}
 
 Create a dummy day 0 that is equal to Sunday of the previous week, allowing wrap-around from Sunday to Monday.
-\begin{equation}
-  x_{s, w-1, |D|} = x_{s, w, 0} \quad\forall s\in S, w\in W
-\end{equation}
+\begin{align}
+  x_{s, w-1, |D|} = x_{s, w, 0} \quad\forall s\in S,\ w\in W
+\end{align}
 
-Ensure every slot has a shift assigned, except for the night-shift week which must have two.
-\begin{equation}
-  \sum_{s\in S} x_{s, w, d} - y_w = 1 \quad\forall w\in W, d\in D
-\end{equation}
+Ensure every slot has a shift assigned by summing over all shift types, except for the night-shift week which must have two.
+\begin{align}
+  \sum_{s\in S} x_{s, w, d} - y_w = 1 \quad\forall w\in W,\ d\in D
+\end{align}
 
-\iffalse
-# CONSTRAIN DUMMY SCHEDULE WEEKS/DAYS
-s.t. DummyWeek {s in SHIFTS, d in DAYS}:
-	schedule[s, 0, d] = schedule[s, nWeeks, d];
-s.t. DummyDay {s in SHIFTS, w in WEEKS}:
-	schedule[s, w-1, nDays] = schedule[s, w, 0];
+Every day must have a single registrar assigned to each A, P and N shift.
+\begin{align}
+  \sum_{w\in W} x_{s, w, d} = 1 \quad\forall s\in \{\text{A, P, N}\},\ d\in D
+\end{align}
 
-# every slot has a shift assigned, except for nightshift week with 2
-s.t. AlwaysShift {w in WEEKS, d in DAYS}:
-	sum {s in SHIFTS} schedule[s, w, d] - nightShift[w] = 1;
+Every P shift must follow an A shift, except for Sunday where an A must follow.
+\begin{align}
+  x_{\text{P}, w, d} &= x_{\text{A}, w, d-1} \quad\forall w\in W,\ d\in D\\
+  x_{\text{A}, w, d} &= x_{\text{A}, w, d-1} \quad\forall w\in W,\ d\in \{\text{Sun}\}
+\end{align}
 
-# every day has one A/P/N
-s.t. ReqShift {s in REQSHIFTS, d in DAYS}:
-	sum {w in WEEKS} schedule[s, w, d] = 1;
+Setting up the night shift: only one week can be the full `night shift' week.
+\begin{align}
+  \sum_{w\in W} y_w = 1
+\end{align}
 
-# A followed by P
-s.t. PAfterA {w in WEEKS, d in DAYS diff {7}}:
-	schedule['P', w, d] = schedule['A', w, d-1];
-s.t. AAfterASunday {w in WEEKS, d in {7}}:
-	schedule['A', w, d] = schedule['A', w, d-1];
+The Friday to Sunday before the full night shift week are also night shifts.
+\begin{align}
+  x_{\text{N}, w-1, d} - y_w = 0 \quad\forall w\in W,\ d\in \{\text{Fri, Sat, Sun}\}
+\end{align}
 
-# only one night shift
-s.t. OneNightShift:
-	sum {w in WEEKS} nightShift[w] = 1;
+The Monday to Thursday of the full night shift week are night shifts.
+\begin{align}
+  x_{\text{N}, w, d} - y_w = 0 \quad\forall w\in W,\ d\in \{\text{Mon, Tue, Wed, Thu}\}
+\end{align}
 
-# CREATE NIGHT SHIFT
-# Fri - Sun night shift
-s.t. NightShiftPrevWeek {w in WEEKS, d in NIGHTSHIFTPREVDAYS}:
-	schedule['N', w-1, d] - nightShift[w] = 0;
-# Mon - Thurs night shift
-s.t. NightShiftWeek {w in ALLWEEKS, d in NIGHTSHIFTDAYS}:
-	schedule['N', w, d] - nightShift[w] = 0;
-# Fri - Sun rests
-s.t. RestShiftWeek {w in WEEKS, d in RESTSHIFTDAYS}:
-	schedule['Z', w, d] - nightShift[w] = 0;
-# only three rests in whole schedule
-s.t. RestLimit:
-	sum {w in WEEKS, d in DAYS} schedule['Z', w, d] = nAllowedRests;
+The Friday to Sunday of the full night shift week are sleep shifts.
+\begin{align}
+  x_{\text{Z}, w, d} - y_w = 0 \quad\forall w\in W,\ d\in \{\text{Fri, Sat, Sun}\}
+\end{align}
 
-# weekdays on
-s.t. WeekdaysOn{w in WEEKS, d in WEEKDAYS}:
-	schedule['X', w, d] = 0;
-# weekends can be off
-s.t. WeekendsOff{w in WEEKS, d in WEEKENDS}:
-	schedule['X', w, d] >= weekendsOff[w];
-# no consecutive weekends forced on
-s.t. ConsecutiveWeekendsOff{w in WEEKS}:
-	weekendsOff[w] + weekendsOff[w-1] >= 1;
-\fi
+Ensure no one else has a sleep shift and is slacking off!
+\begin{align}
+  \sum_{w\in W,\ d\in D} x_{\text{Z}, w, d} = \text{n.o. allowed rests (i.e., 3)}
+\end{align}
+
+To give people weekends off: no weekdays are allowed to be taken off:
+\begin{align}
+  x_{\text{X}, w, d} = 0 \quad\forall w\in W,\ d\in \{\text{Mon, \dots, Fri}\}
+\end{align}
+
+Weekends must be taken off if scheduled as a 'weekend off' (but may be taken off on other weekends):
+\begin{align}
+  x_{\text{X}, w, d} \ge 0 \quad\forall w\in W,\ d\in \{\text{Sat, Sun}\}
+\end{align}
+
+No two consecutive weekends can pass without a weekend off being forced.
+\begin{align}
+  v_w + v_{w-1} \ge 1 \quad\forall w\in W
+\end{align}
 
 \end{document}
