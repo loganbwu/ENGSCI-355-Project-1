@@ -14,26 +14,9 @@
 \usepackage{courier}
 \usepackage{siunitx}
 
-\usepackage{color} %red, green, blue, yellow, cyan, magenta, black, white
-\definecolor{mygreen}{RGB}{28,172,0} % color values Red, Green, Blue
-\definecolor{mylilas}{RGB}{170,55,241}
-\lstset{language=Matlab,%
-    breaklines=true,%
-    morekeywords={matlab2tikz},
-    keywordstyle=\color{blue},%
-    morekeywords=[2]{1}, keywordstyle=[2]{\color{black}},
-    identifierstyle=\color{black},%
-    stringstyle=\color{mylilas},
-    commentstyle=\color{mygreen},%
-    showstringspaces=false,%without this there will be a symbol in the places where there is a space
-    numbers=left,%
-    numberstyle={\tiny \color{black}},% size of the numbers
-    numbersep=9pt, % this defines how far the numbers are from the text
-    emph=[1]{for,end,break},emphstyle=[1]\color{red}, %some words to emphasise
-}
-
 %% Sets page size and margins
 \usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
+\setlength{\parindent}{0pt}
 
 %% Set sections to 1.a etc
 \renewcommand{\thesubsection}{\thesection.\alph{subsection}}
@@ -74,5 +57,94 @@
 \makeatother
 \pagestyle{fancy}
 
+\section{Formulation}
+
+\subsection{Parameters}
+
+\begin{align*}
+S &= \{\text{A, P, N, Z, X, O}\}; \quad\text{Set of shift types}\\
+W &= \{1, 2, 3, 4, 5, 6\}; \quad\text{Set of weeks in the roster cycle}\\
+D &= \{\text{Mon},\dots,\text{Sun}\}; \quad\text{Set of days in a week}
+\end{align*}
+
+Note that for continuity, a dummy week $0$ and dummy day $\text{Sun}_\text{dummy}$ also exist but are not part of the sets $W$ and $D$.
+
+\subsection{Decision Variables}
+
+$X$ is the array of binary variables determining if a type of shift belongs to a given week and day in the roster:
+$$x_{s, w, d} \in \{0, 1\} \quad\forall s\in S,\  w\in W \cup \{0\},\  d\in D \cup \{\text{Sun}_\text{dummy}\}$$
+
+$Y$ determines if a given week in the roster is the night shift week. Note the night shift also includes the final three days of the preceding week:
+$$y_w \in \{0, 1\} \quad\forall w\in W \cup \{\text{Sun}_\text{dummy}\}$$
+
+$V$ denotes whether registrars are forced to take a weekend off:
+$$v_w \in \{0, 1\} \quad\forall w\in W \cup \{\text{Sun}_\text{dummy}\}$$
+
+\subsection{Constraints}
+
+Create a dummy week 0 that is equal to week 6.
+\begin{equation}
+  x_{s, 0, d} = x_{s, |W|, d} \quad\forall s\in S,\ d\in D
+\end{equation}
+
+Create a dummy day 0 that is equal to Sunday of the previous week, allowing wrap-around from Sunday to Monday.
+\begin{equation}
+  x_{s, w-1, |D|} = x_{s, w, 0} \quad\forall s\in S, w\in W
+\end{equation}
+
+Ensure every slot has a shift assigned, except for the night-shift week which must have two.
+\begin{equation}
+  \sum_{s\in S} x_{s, w, d} - y_w = 1 \quad\forall w\in W, d\in D
+\end{equation}
+
+\iffalse
+# CONSTRAIN DUMMY SCHEDULE WEEKS/DAYS
+s.t. DummyWeek {s in SHIFTS, d in DAYS}:
+	schedule[s, 0, d] = schedule[s, nWeeks, d];
+s.t. DummyDay {s in SHIFTS, w in WEEKS}:
+	schedule[s, w-1, nDays] = schedule[s, w, 0];
+
+# every slot has a shift assigned, except for nightshift week with 2
+s.t. AlwaysShift {w in WEEKS, d in DAYS}:
+	sum {s in SHIFTS} schedule[s, w, d] - nightShift[w] = 1;
+
+# every day has one A/P/N
+s.t. ReqShift {s in REQSHIFTS, d in DAYS}:
+	sum {w in WEEKS} schedule[s, w, d] = 1;
+
+# A followed by P
+s.t. PAfterA {w in WEEKS, d in DAYS diff {7}}:
+	schedule['P', w, d] = schedule['A', w, d-1];
+s.t. AAfterASunday {w in WEEKS, d in {7}}:
+	schedule['A', w, d] = schedule['A', w, d-1];
+
+# only one night shift
+s.t. OneNightShift:
+	sum {w in WEEKS} nightShift[w] = 1;
+
+# CREATE NIGHT SHIFT
+# Fri - Sun night shift
+s.t. NightShiftPrevWeek {w in WEEKS, d in NIGHTSHIFTPREVDAYS}:
+	schedule['N', w-1, d] - nightShift[w] = 0;
+# Mon - Thurs night shift
+s.t. NightShiftWeek {w in ALLWEEKS, d in NIGHTSHIFTDAYS}:
+	schedule['N', w, d] - nightShift[w] = 0;
+# Fri - Sun rests
+s.t. RestShiftWeek {w in WEEKS, d in RESTSHIFTDAYS}:
+	schedule['Z', w, d] - nightShift[w] = 0;
+# only three rests in whole schedule
+s.t. RestLimit:
+	sum {w in WEEKS, d in DAYS} schedule['Z', w, d] = nAllowedRests;
+
+# weekdays on
+s.t. WeekdaysOn{w in WEEKS, d in WEEKDAYS}:
+	schedule['X', w, d] = 0;
+# weekends can be off
+s.t. WeekendsOff{w in WEEKS, d in WEEKENDS}:
+	schedule['X', w, d] >= weekendsOff[w];
+# no consecutive weekends forced on
+s.t. ConsecutiveWeekendsOff{w in WEEKS}:
+	weekendsOff[w] + weekendsOff[w-1] >= 1;
+\fi
 
 \end{document}
