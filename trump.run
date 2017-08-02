@@ -1,3 +1,22 @@
 reset;
 model trump.mod;
 data trump.dat;
+
+option solver cplex;
+solve;
+
+# Print the stuff that you need to print
+printf "Schedule:\n";
+printf "\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n";
+for {w in WEEKS} {
+	printf "Week %d\t ", w;
+	for {d in DAYS} {
+		for {s in SHIFTS} {
+			if schedule[s, w, d] > 0 then {
+				printf "%c", s;
+			};
+		};
+		printf "\t ";
+	};
+	printf "\n";
+};

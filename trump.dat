@@ -1,0 +1,10 @@
+param nWeeks := 6;
+param nDays := 7;
+param nAllowedRests := 3;
+set REQSHIFTS := A P N;
+set NONREQSHIFTS := Z X O;
+set NIGHTSHIFTPREVDAYS := 5 6 7;
+set NIGHTSHIFTDAYS := 1 2 3 4;
+set RESTSHIFTDAYS := 5 6 7;
+set WEEKDAYS := 1 2 3 4 5;
+set WEEKENDS := 6 7;
