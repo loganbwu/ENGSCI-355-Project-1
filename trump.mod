@@ -94,14 +94,9 @@ param RR {ROSTERDAYS};
 set WARDS;	# LIME NAVY YELLOW
 var occupancy {WARDS, ROSTERDAYS};
 var admitting {WARDS, ROSTERDAYS} binary;
+var wardDiff {ROSTERDAYS};
+var maxWardDiff;
 param startingWeeks {WARDS, 1..nRegistrars};
-#var sWComp {WARDS, WARDS, 1..nRegistrars, 1..nRegistrars} binary;	# controls direction of inequality
-
-# enforce inequality between starting weeks
-#s.t. RegistrarClashA {wa in WARDS, wb in WARDS, i in 1..nRegistrars, j in 1..nRegistrars}:
-#	not ((wa=wb) and (i=j)) ==> startingWeeks[wa, i] + nWeeks*sWComp[wa, wb, i, j] >= startingWeeks[wb, j] + 1;
-#s.t. RegistrarClashB {wa in WARDS, wb in WARDS, i in 1..nRegistrars, j in 1..nRegistrars}:
-#	not ((wa=wb) and (i=j)) ==> startingWeeks[wa, i] + 1 <= startingWeeks[wb, j] + nWeeks*(1-sWComp[wa, wb, i, j]);
 
 # calculate occupancy for the next day
 # is the ward admitting?
@@ -112,3 +107,17 @@ s.t. Admittance {wa in WARDS, r in ROSTERDAYS}:
 # calculate occupancy
 s.t. Occupancy {wa in WARDS, r in ROSTERDAYS}:
 	occupancy[wa, r mod totalDays + 1] = occupancy[wa, r]*(1-discountRate) + admitting[wa, r]*RR[r];
+	
+# calculate ward difference
+s.t. WardDifferenceA {r in ROSTERDAYS, wa in WARDS, wb in WARDS}:
+	wardDiff[r] >= occupancy[wa, r] - occupancy[wb, r];
+
+# calculate max ward difference
+s.t. MaxWardDifference {r in ROSTERDAYS}:
+	maxWardDiff >= wardDiff[r];
+	
+# ==============================================================
+# OBJECTIVE FUNCTION
+# ==============================================================
+
+minimize MaxWardDifferenceObj: maxWardDiff;

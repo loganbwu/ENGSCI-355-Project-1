@@ -23,9 +23,11 @@ param WEEKLYADMISSIONRATE :=
  ;
 
 set WARDS := LIME NAVY YELLOW;
-param discountRate := 1;
 param startingWeeks (tr) : 
 	LIME	NAVY	YELLOW :=
 1	0		0		0
 2	0		0		0
 ;
+
+
+param discountRate := 0.25;
