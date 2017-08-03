@@ -14,7 +14,29 @@ for {w in WEEKS} {
 };
 
 option solver cplex;
-solve;
+
+# enumerate registrar starting weeks
+for {i in WEEKS} {
+	for {j in WEEKS diff {i}} {
+		for {k in WEEKS diff {i,j}} {
+			for {l in WEEKS diff {i,j,k}} {
+				for {m in WEEKS diff {i,j,k,l}} {
+					for {n in WEEKS diff {i,j,k,l,m}} {
+						if i<j and k<l and m<n then {
+							let startingWeeks['LIME', 1] := i;
+							let startingWeeks['LIME', 2] := j;
+							let startingWeeks['NAVY', 1] := k;
+							let startingWeeks['NAVY', 2] := l;
+							let startingWeeks['YELLOW', 1] := m;
+							let startingWeeks['YELLOW', 2] := n;
+							solve;
+						}
+					}
+				}
+			}
+		}
+	}
+}
 
 # Print the stuff that you need to print
 printf "Roster:\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n";
