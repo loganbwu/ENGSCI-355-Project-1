@@ -14,24 +14,22 @@ set SHIFTS := REQSHIFTS union NONREQSHIFTS;
 
 # weeks
 set WEEKS := 1..nWeeks;
-set ALLWEEKS := {0} union WEEKS;	# superset including dummy week
 
 # days
 set WEEKDAYS;
 set WEEKENDS;
 set DAYS := WEEKDAYS union WEEKENDS;
-set ALLDAYS := {0} union DAYS;		# superset including dummy day
 set NIGHTSHIFTPREVDAYS;
 set NIGHTSHIFTDAYS;
 set RESTSHIFTDAYS;
 
-# decision variables
-var schedule {SHIFTS, ALLWEEKS, ALLDAYS} binary;
-var nightShift {ALLWEEKS} binary;
-var weekendsOff {ALLWEEKS} binary;
+# decision variables - include dummy weeks/days 0
+var schedule {SHIFTS, {0} union WEEKS, {0} union DAYS} binary;
+var nightShift {{0} union WEEKS} binary;
+var weekendsOff {{0} union WEEKS} binary;
 
 # ==============================================================
-# CONSTRAINTS
+# FEASIBILITY CONSTRAINTS
 # ==============================================================
 
 # continuity for dummy weeks/days
@@ -63,7 +61,7 @@ s.t. OneNightShift:
 s.t. NightShiftPrevWeek {w in WEEKS, d in NIGHTSHIFTPREVDAYS}:
 	schedule['N', w-1, d] - nightShift[w] = 0;
 # Mon - Thurs night shift
-s.t. NightShiftWeek {w in ALLWEEKS, d in NIGHTSHIFTDAYS}:
+s.t. NightShiftWeek {w in WEEKS, d in NIGHTSHIFTDAYS}:
 	schedule['N', w, d] - nightShift[w] = 0;
 # Fri - Sun rest shifts
 s.t. RestShiftWeek {w in WEEKS, d in RESTSHIFTDAYS}:
@@ -82,3 +80,16 @@ s.t. WeekendsOff{w in WEEKS, d in WEEKENDS}:
 s.t. ConsecutiveWeekendsOff{w in WEEKS}:
 	weekendsOff[w] + weekendsOff[w-1] >= 1;
 	
+# ==============================================================
+# OBJECTIVE CONSTRAINTS
+# ==============================================================
+
+param totalDays;
+param discountRate;
+param testAdmissionRate := 10;
+#set WEEKLYADMISSIONRATE;
+set ROSTERDAYS := 1..totalDays;
+var occupancy{ROSTERDAYS};
+
+s.t. Occupancy {r in ROSTERDAYS}:
+	occupancy[r mod totalDays + 1] = occupancy[r]*(1-discountRate) + schedule['A', ceil(r/card(DAYS)), r-7*(ceil(r/card(DAYS))-1)]*testAdmissionRate;

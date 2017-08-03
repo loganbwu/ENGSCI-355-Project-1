@@ -36,7 +36,7 @@
 \setlength{\parskip}{\baselineskip}
 \fancyhead{}
 \fancyhead[L]{\@title}
-\fancyhead[R]{\@author}
+\fancyhead[R]{Jackson, Sung, Wu}
 \newlength{\drop}
 \begin{document}
 \begin{titlepage}
@@ -63,7 +63,7 @@
 
 \begin{align*}
 S &= \{\text{A, P, N, Z, X, O}\}; \quad\text{Set of shift types}\\
-W &= \{1, 2, 3, 4, 5, 6\}; \quad\text{Set of weeks in the roster cycle}\\
+W &= \{1, \dots, 6\}; \quad\text{Set of weeks in the roster cycle}\\
 D &= \{\text{Mon},\dots,\text{Sun}\}; \quad\text{Set of days in a week}
 \end{align*}
 
@@ -82,7 +82,7 @@ $$v_w \in \{0, 1\} \quad\forall w\in W \cup \{\text{Sun}_\text{dummy}\}$$
 
 \subsection{Constraints}
 
-Create a dummy week 0 that is equal to week 6.
+Create a dummy week 0 that is equal to the final week.
 \begin{align}
   x_{s, 0, d} = x_{s, |W|, d} \quad\forall s\in S,\ d\in D
 \end{align}

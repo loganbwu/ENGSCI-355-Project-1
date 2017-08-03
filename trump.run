@@ -2,12 +2,22 @@ reset;
 model trump.mod;
 data trump.dat;
 
+let totalDays := nWeeks * card(DAYS);
+#display RR;
+# duplicate weekly admissions over 6 weeks
+#for {w in WEEKS} {
+#	for {d in DAYS} {
+#		let rosterday := (w-1)*7 + d;
+#		#let RR[rosterday] := WEEKLYADMISSIONRATE[d];
+#		printf "%s", rosterday;
+#	};
+#};
+
 option solver cplex;
 solve;
 
 # Print the stuff that you need to print
-printf "Schedule:\n";
-printf "\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n";
+printf "Roster:\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n";
 for {w in WEEKS} {
 	printf "Week %d\t ", w;
 	for {d in DAYS} {
@@ -20,3 +30,5 @@ for {w in WEEKS} {
 	};
 	printf "\n";
 };
+
+display occupancy;
