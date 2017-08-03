@@ -94,26 +94,21 @@ param RR {ROSTERDAYS};
 set WARDS;	# LIME NAVY YELLOW
 var occupancy {WARDS, ROSTERDAYS};
 var admitting {WARDS, ROSTERDAYS} binary;
-var startingWeeksInt {WARDS, 1..nRegistrars} integer >= 1, <= nWeeks, default 0;
+var startingWeeks {WARDS, 1..nRegistrars} integer >= 1, <= nWeeks;
 var sWComp {WARDS, WARDS, 1..nRegistrars, 1..nRegistrars} binary;	# controls direction of inequality
 
 # enforce inequality between starting weeks
 s.t. RegistrarClashA {wa in WARDS, wb in WARDS, i in 1..nRegistrars, j in 1..nRegistrars}:
-	not ((wa=wb) and (i=j)) ==> startingWeeksInt[wa, i] + 10*sWComp[wa, wb, i, j] >= startingWeeksInt[wb, j] + 1;
+	not ((wa=wb) and (i=j)) ==> startingWeeks[wa, i] + nWeeks*sWComp[wa, wb, i, j] >= startingWeeks[wb, j] + 1;
 s.t. RegistrarClashB {wa in WARDS, wb in WARDS, i in 1..nRegistrars, j in 1..nRegistrars}:
-	not ((wa=wb) and (i=j)) ==> startingWeeksInt[wa, i] + 1 <= startingWeeksInt[wb, j] + 10*(1-sWComp[wa, wb, i, j]);
-
+	not ((wa=wb) and (i=j)) ==> startingWeeks[wa, i] + 1 <= startingWeeks[wb, j] + nWeeks*(1-sWComp[wa, wb, i, j]);
 
 # calculate occupancy for the next day
 # is the ward admitting?
 # note: week = ceil(r/card(DAYS))
-s.t. AdmittanceA {wa in WARDS, r in ROSTERDAYS}:
-	admitting[wa, r] = schedule['A',1, r-7*(ceil(r/card(DAYS))-1)];
-#s.t. AdmittanceB {wa in WARDS, r in ROSTERDAYS}:
-#	admitting[wa, r] <= startingWeeks[wa, ceil(r/card(DAYS))];
-#s.t. AdmittanceC {wa in WARDS, r in ROSTERDAYS}:
-#	admitting[wa, r] + 1 >= schedule['A', ceil(r/card(DAYS)), r-7*(ceil(r/card(DAYS))-1)] + startingWeeks[wa, ceil(r/card(DAYS))];
-
+s.t. Admittance {wa in WARDS, r in ROSTERDAYS}:
+	admitting[wa, (r+1) mod totalDays + 1] = schedule['A', ceil(r/card(DAYS)), r-7*(ceil(r/card(DAYS))-1)];
+	
 # calculate occupancy
 s.t. Occupancy {wa in WARDS, r in ROSTERDAYS}:
 	occupancy[wa, r mod totalDays + 1] = occupancy[wa, r]*(1-discountRate) + admitting[wa, r]*RR[r];
