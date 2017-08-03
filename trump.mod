@@ -85,15 +85,35 @@ s.t. ConsecutiveWeekendsOff{w in WEEKS}:
 # ==============================================================
 
 param totalDays;
+param nRegistrars;
 param discountRate;
 param testAdmissionRate := 10;
-#set WEEKLYADMISSIONRATE;
+param WEEKLYADMISSIONRATE {1..7};
 set ROSTERDAYS := 1..totalDays;
-var occupancy{ROSTERDAYS};
+param RR {ROSTERDAYS};
+set WARDS;	# LIME NAVY YELLOW
+var occupancy {WARDS, ROSTERDAYS};
+var admitting {WARDS, ROSTERDAYS} binary;
+var startingWeeksInt {WARDS, 1..nRegistrars} integer >= 1, <= nWeeks, default 0;
+var sWComp {WARDS, WARDS, 1..nRegistrars, 1..nRegistrars} binary;	# controls direction of inequality
 
-var startingWeek{1..2} integer >= 1, <= nWeeks, default 1;
-s.t. RegistrarClash:	# cannot share same week; [2] > [1]
-	startingWeek[2] - startingWeek[1] >= 1;
+# enforce inequality between starting weeks
+s.t. RegistrarClashA {wa in WARDS, wb in WARDS, i in 1..nRegistrars, j in 1..nRegistrars}:
+	not ((wa=wb) and (i=j)) ==> startingWeeksInt[wa, i] + 10*sWComp[wa, wb, i, j] >= startingWeeksInt[wb, j] + 1;
+s.t. RegistrarClashB {wa in WARDS, wb in WARDS, i in 1..nRegistrars, j in 1..nRegistrars}:
+	not ((wa=wb) and (i=j)) ==> startingWeeksInt[wa, i] + 1 <= startingWeeksInt[wb, j] + 10*(1-sWComp[wa, wb, i, j]);
 
-s.t. Occupancy {r in ROSTERDAYS}:
-	occupancy[r mod totalDays + 1] = occupancy[r]*(1-discountRate) + schedule['A', ceil(r/card(DAYS)), r-7*(ceil(r/card(DAYS))-1)]*testAdmissionRate;
+
+# calculate occupancy for the next day
+# is the ward admitting?
+# note: week = ceil(r/card(DAYS))
+s.t. AdmittanceA {wa in WARDS, r in ROSTERDAYS}:
+	admitting[wa, r] = schedule['A',1, r-7*(ceil(r/card(DAYS))-1)];
+#s.t. AdmittanceB {wa in WARDS, r in ROSTERDAYS}:
+#	admitting[wa, r] <= startingWeeks[wa, ceil(r/card(DAYS))];
+#s.t. AdmittanceC {wa in WARDS, r in ROSTERDAYS}:
+#	admitting[wa, r] + 1 >= schedule['A', ceil(r/card(DAYS)), r-7*(ceil(r/card(DAYS))-1)] + startingWeeks[wa, ceil(r/card(DAYS))];
+
+# calculate occupancy
+s.t. Occupancy {wa in WARDS, r in ROSTERDAYS}:
+	occupancy[wa, r mod totalDays + 1] = occupancy[wa, r]*(1-discountRate) + admitting[wa, r]*RR[r];

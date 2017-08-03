@@ -3,15 +3,15 @@ model trump.mod;
 data trump.dat;
 
 let totalDays := nWeeks * card(DAYS);
-#display RR;
+
 # duplicate weekly admissions over 6 weeks
-#for {w in WEEKS} {
-#	for {d in DAYS} {
-#		let rosterday := (w-1)*7 + d;
-#		#let RR[rosterday] := WEEKLYADMISSIONRATE[d];
-#		printf "%s", rosterday;
-#	};
-#};
+for {w in WEEKS} {
+	for {d in DAYS} {
+		#let rosterday := (w-1)*7 + d;
+		let RR[(w-1)*7 + d] := WEEKLYADMISSIONRATE[d];
+		#printf "%s", ((w-1)*7 + d);
+	};
+};
 
 option solver cplex;
 solve;

@@ -1,5 +1,6 @@
 param nWeeks := 6;
 param nAllowedRests := 3;
+param nRegistrars := 2;	# per ward
 
 set REQSHIFTS := A P N;
 set NONREQSHIFTS := Z X O;
@@ -11,5 +12,15 @@ set RESTSHIFTDAYS := 5 6 7;
 set WEEKDAYS := 1 2 3 4 5;
 set WEEKENDS := 6 7;
 
-#set WEEKLYADMISSIONRATE := 32.4 30.53 29.13 29.07 29.53 23.13 22.33;
-param discountRate := 0.5;
+param WEEKLYADMISSIONRATE := 
+1	32.4 
+2	30.53
+3	29.13
+4	29.07
+5	29.53
+6	23.13
+7	22.33
+ ;
+
+set WARDS := LIME NAVY YELLOW;
+param discountRate := 1;
