@@ -96,6 +96,7 @@ var occupancy {WARDS, ROSTERDAYS};
 var admitting {WARDS, ROSTERDAYS} binary;
 var wardDiff {ROSTERDAYS};
 var maxWardDiff;
+var totalWardDiff;
 param startingWeeks {WARDS, 1..nRegistrars};
 
 # calculate occupancy for the next day
@@ -115,9 +116,14 @@ s.t. WardDifferenceA {r in ROSTERDAYS, wa in WARDS, wb in WARDS}:
 # calculate max ward difference
 s.t. MaxWardDifference {r in ROSTERDAYS}:
 	maxWardDiff >= wardDiff[r];
+
+# calculate overall ward difference
+s.t. TotalWardDifference:
+	totalWardDiff >= sum {r in ROSTERDAYS} wardDiff[r];
 	
 # ==============================================================
 # OBJECTIVE FUNCTION
 # ==============================================================
 
-minimize MaxWardDifferenceObj: maxWardDiff;
+#minimize MaxWardDifferenceObj: maxWardDiff;
+minimize TotalWardDifferenceObj: totalWardDiff;

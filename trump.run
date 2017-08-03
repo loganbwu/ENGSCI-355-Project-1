@@ -22,7 +22,7 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 			for {l in WEEKS diff {i,j,k}} {
 				for {m in WEEKS diff {i,j,k,l}} {
 					for {n in WEEKS diff {i,j,k,l,m}} {
-						if i<j and k<l and m<n then {
+						if i<=j and k<=l and m<=n and k<=m then {
 							let startingWeeks['LIME', 1] := i;
 							let startingWeeks['LIME', 2] := j;
 							let startingWeeks['NAVY', 1] := k;
