@@ -91,5 +91,9 @@ param testAdmissionRate := 10;
 set ROSTERDAYS := 1..totalDays;
 var occupancy{ROSTERDAYS};
 
+var startingWeek{1..2} integer >= 1, <= nWeeks, default 1;
+s.t. RegistrarClash:	# cannot share same week; [2] > [1]
+	startingWeek[2] - startingWeek[1] >= 1;
+
 s.t. Occupancy {r in ROSTERDAYS}:
 	occupancy[r mod totalDays + 1] = occupancy[r]*(1-discountRate) + schedule['A', ceil(r/card(DAYS)), r-7*(ceil(r/card(DAYS))-1)]*testAdmissionRate;
