@@ -13,6 +13,9 @@ for {w in WEEKS} {
 
 option solver cplex;
 
+var runNumber;
+let runNumber := 0;
+
 # enumerate registrar starting weeks
 for {i in {1}} {	# first week doesn't need to change; it is a cycle
 	for {j in WEEKS diff {i}} {
@@ -28,7 +31,35 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 							let startingWeeks['YELLOW', 1] := m;
 							let startingWeeks['YELLOW', 2] := n;
 							
-							#solve;
+							let runNumber := runNumber + 1;
+							printf"\nRun: %d/15\n", runNumber;
+					
+							solve;
+							
+							# Print the stuff that you need to print
+							# print roster
+							printf "Roster:\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n" > ("results/"&i&j&"-"&k&l&"-"&m&n&"_"&_obj[1]&".txt");
+							for {w in WEEKS} {
+								printf "Week %d\t ", w > ("results/"&i&j&"-"&k&l&"-"&m&n&"_"&_obj[1]&".txt");
+								for {d in DAYS} {
+									for {s in {'N', 'Z'}} {
+										if schedule[s, w, d] > 0 then {
+											printf "%c", s > ("results/"&i&j&"-"&k&l&"-"&m&n&"_"&_obj[1]&".txt");
+										}
+									}
+									for {s in SHIFTS diff {'N', 'Z'}} {
+										if schedule[s, w, d] > 0 then {
+											printf "%c", s > ("results/"&i&j&"-"&k&l&"-"&m&n&"_"&_obj[1]&".txt");
+										}
+									}
+									printf "\t " > ("results/"&i&j&"-"&k&l&"-"&m&n&"_"&_obj[1]&".txt");
+								}
+								printf "\n" > ("results/"&i&j&"-"&k&l&"-"&m&n&"_"&_obj[1]&".txt");
+							}
+							
+							# print occupancies
+							
+							display occupancy > ("results/"&i&j&"-"&k&l&"-"&m&n&"_"&_obj[1]&".txt");
 						}
 					}
 				}
@@ -36,29 +67,3 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 		}
 	}
 }
-solve;
-
-# Print the stuff that you need to print
-# print roster
-printf "Roster:\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n";
-for {w in WEEKS} {
-	printf "Week %d\t ", w;
-	for {d in DAYS} {
-		for {s in {'N', 'Z'}} {
-			if schedule[s, w, d] > 0 then {
-				printf "%c", s;
-			};
-		};
-		for {s in SHIFTS diff {'N', 'Z'}} {
-			if schedule[s, w, d] > 0 then {
-				printf "%c", s;
-			};
-		};
-		printf "\t ";
-	};
-	printf "\n";
-};
-
-# print occupancies
-
-display occupancy;
