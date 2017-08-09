@@ -7,9 +7,7 @@ let totalDays := nWeeks * card(DAYS);
 # duplicate weekly admissions over 6 weeks
 for {w in WEEKS} {
 	for {d in DAYS} {
-		#let rosterday := (w-1)*7 + d;
 		let RR[(w-1)*7 + d] := WEEKLYADMISSIONRATE[d];
-		#printf "%s", ((w-1)*7 + d);
 	};
 };
 
@@ -22,14 +20,15 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 			for {l in WEEKS diff {i,j,k}} {
 				for {m in WEEKS diff {i,j,k,l}} {
 					for {n in WEEKS diff {i,j,k,l,m}} {
-						if i<=j and k<=l and m<=n and k<=m then {
+						if i<=j and k<=l and m<=n and k<=m then {	# ordering to remove symmetry
 							let startingWeeks['LIME', 1] := i;
 							let startingWeeks['LIME', 2] := j;
 							let startingWeeks['NAVY', 1] := k;
 							let startingWeeks['NAVY', 2] := l;
 							let startingWeeks['YELLOW', 1] := m;
 							let startingWeeks['YELLOW', 2] := n;
-							solve;
+							
+							#solve;
 						}
 					}
 				}
@@ -37,9 +36,10 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 		}
 	}
 }
-#solve;
+solve;
 
 # Print the stuff that you need to print
+# print roster
 printf "Roster:\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n";
 for {w in WEEKS} {
 	printf "Week %d\t ", w;
@@ -58,5 +58,7 @@ for {w in WEEKS} {
 	};
 	printf "\n";
 };
+
+# print occupancies
 
 display occupancy;

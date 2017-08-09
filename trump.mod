@@ -26,7 +26,7 @@ set RESTSHIFTDAYS;
 # decision variables - include dummy weeks/days 0
 var schedule {SHIFTS, {0} union WEEKS, {0} union DAYS} binary;
 var nightShift {{0} union WEEKS} binary;
-var weekendsOff {{0} union WEEKS} binary;
+var weekendsOff {WEEKS} binary;		# no dummy, uses wraparound 'mod' instead
 
 # ==============================================================
 # FEASIBILITY CONSTRAINTS
@@ -46,14 +46,14 @@ s.t. AlwaysShift {w in WEEKS, d in DAYS}:
 s.t. ReqShift {s in REQSHIFTS, d in DAYS}:
 	sum {w in WEEKS} schedule[s, w, d] = 1;
 	
-# A followed by P
+# A followed by P or A on Sunday
 s.t. PAfterA {w in WEEKS, d in DAYS diff {7}}:
 	schedule['P', w, d] = schedule['A', w, d-1];
 s.t. AAfterASunday {w in WEEKS, d in {7}}:
 	schedule['A', w, d] = schedule['A', w, d-1];
 
-# only one night shift
-s.t. OneNightShift:
+# only one night shift week in roster
+s.t. OneNightShiftWeek:
 	sum {w in WEEKS} nightShift[w] = 1;
 	
 # create night shift
@@ -76,9 +76,10 @@ s.t. WeekdaysOn{w in WEEKS, d in WEEKDAYS}:
 # weekends can be off
 s.t. WeekendsOff{w in WEEKS, d in WEEKENDS}:
 	schedule['X', w, d] >= weekendsOff[w];
+
 # no consecutive weekends forced on
 s.t. ConsecutiveWeekendsOff{w in WEEKS}:
-	weekendsOff[w] + weekendsOff[w-1] >= 1;
+	weekendsOff[w] + weekendsOff[w mod nWeeks + 1] >= 1;
 	
 # ==============================================================
 # OBJECTIVE CONSTRAINTS
