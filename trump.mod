@@ -104,7 +104,7 @@ param startingWeeks {WARDS, 1..nRegistrars};
 # is the ward admitting?
 # note: week = ceil(r/card(DAYS))
 s.t. Admittance {wa in WARDS, r in ROSTERDAYS}:
-	admitting[wa, (r+1) mod totalDays + 1] = schedule['A', ceil((r+7*(startingWeeks[wa, 1]-1))/card(DAYS)) mod nWeeks+1, r-7*(ceil(r/card(DAYS))-1)];
+	admitting[wa, (r+1) mod totalDays + 1] = sum {re in 1..nRegistrars} schedule['A', ceil((r+7*(startingWeeks[wa, re]-1))/card(DAYS)) mod nWeeks+1, r-7*(ceil(r/card(DAYS))-1)];
 	
 # calculate occupancy
 s.t. Occupancy {wa in WARDS, r in ROSTERDAYS}:
