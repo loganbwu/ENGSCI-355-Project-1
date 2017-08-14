@@ -4,13 +4,6 @@ data trump.dat;
 
 let totalDays := nWeeks * card(DAYS);
 
-# duplicate weekly admissions over 6 weeks
-for {w in WEEKS} {
-	for {d in DAYS} {
-		let RR[(w-1)*7 + d] := WEEKLYADMISSIONRATE[d];
-	};
-};
-
 option solver cplex;
 
 var runNumber;
@@ -69,11 +62,10 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 	}
 }
 
-#solve;
+/*solve;
 
 # Print the stuff that you need to print
-# print roster
-/*printf "Roster:\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n";
+printf "Roster:\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n";
 for {w in WEEKS} {
 	printf "Week %d\t ", w;
 	for {d in DAYS} {
@@ -90,4 +82,6 @@ for {w in WEEKS} {
 		printf "\t ";
 	};
 	printf "\n";
-};*/
+};
+
+display occupancy;*/

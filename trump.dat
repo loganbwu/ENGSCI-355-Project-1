@@ -27,7 +27,6 @@ param startingWeeks (tr) :
 	LIME	NAVY	YELLOW :=
 1	0		0		0
 2	0		0		0
-;
-
+ ;
 
 param discountRate := 0.22;		# https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf

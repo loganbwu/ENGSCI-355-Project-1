@@ -86,45 +86,34 @@ s.t. ConsecutiveWeekendsOff{w in WEEKS}:
 # ==============================================================
 
 param totalDays;
-param nRegistrars;
+param nRegistrars;	 						# no. registrars per ward
 param discountRate;
-param testAdmissionRate := 10;
-param WEEKLYADMISSIONRATE {1..7};
+param WEEKLYADMISSIONRATE {1..7}; 			# average admissions per day
 set ROSTERDAYS := 1..totalDays;
-param RR {ROSTERDAYS};
-set WARDS;	# LIME NAVY YELLOW
+set WARDS;	 								# LIME NAVY YELLOW
 var occupancy {WARDS, ROSTERDAYS};
 var admitting {WARDS, ROSTERDAYS} binary;
-var wardDiff {ROSTERDAYS};
-var maxWardDiff;
+var wardDiff {ROSTERDAYS};					# daily ward imbalance
 var totalWardDiff;
-param startingWeeks {WARDS, 1..nRegistrars};
+param startingWeeks {WARDS, 1..nRegistrars};# roster starting week per registrar
 
 # calculate occupancy for the next day
 # is the ward admitting?
 # note: week = ceil(r/card(DAYS))
+# 		day  = (r-1) mod card(DAYS) + 1
 s.t. Admittance {wa in WARDS, r in ROSTERDAYS}:
-	admitting[wa, (r+1) mod totalDays + 1] = sum {re in 1..nRegistrars} schedule['A', ceil((r+7*(startingWeeks[wa, re]-1))/card(DAYS)) mod nWeeks+1, r-7*(ceil(r/card(DAYS))-1)];
+	admitting[wa, (r+1) mod totalDays + 1] = sum {re in 1..nRegistrars} schedule['A', ceil((r+7*(startingWeeks[wa, re]-1))/card(DAYS)) mod nWeeks+1, (r-1) mod card(DAYS) + 1];
 	
 # calculate occupancy
 s.t. Occupancy {wa in WARDS, r in ROSTERDAYS}:
-	occupancy[wa, r mod totalDays + 1] = occupancy[wa, r]*(1-discountRate) + admitting[wa, r]*RR[r];
+	occupancy[wa, r mod totalDays + 1] = occupancy[wa, r]*(1-discountRate) + admitting[wa, r]*WEEKLYADMISSIONRATE[(r-1) mod card(DAYS) + 1];
 	
-# calculate ward difference
+# calculate ward differences
 s.t. WardDifferenceA {r in ROSTERDAYS, wa in WARDS, wb in WARDS}:
 	wardDiff[r] >= occupancy[wa, r] - occupancy[wb, r];
-
-# calculate max ward difference
-s.t. MaxWardDifference {r in ROSTERDAYS}:
-	maxWardDiff >= wardDiff[r];
-
-# calculate overall ward difference
-s.t. TotalWardDifference:
-	totalWardDiff >= sum {r in ROSTERDAYS} wardDiff[r];
 	
 # ==============================================================
 # OBJECTIVE FUNCTION
 # ==============================================================
 
-#minimize MaxWardDifferenceObj: maxWardDiff;
-minimize TotalWardDifferenceObj: totalWardDiff;
+minimize TotalWardDifference: sum {r in ROSTERDAYS} wardDiff[r];
