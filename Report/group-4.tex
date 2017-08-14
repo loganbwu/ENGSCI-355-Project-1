@@ -29,6 +29,12 @@
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{algpseudocode}
 
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
+
 \title{ENGSCI 355 Project 1}
 \author{Andrew Jackson\\Logan Wu\\Scott Sung}
 \makeatletter
@@ -148,6 +154,57 @@ Weekends must be taken off if scheduled as a 'weekend off' (but may be taken off
 No two consecutive weekends can pass without a weekend off being forced.
 \begin{align}
   v_w + v_{w-1} \ge 1 \quad\forall w\in W
+\end{align}
+
+\subsection{Objective Parameters}
+
+There are several new definitions that are particular to this section of the formulation.
+\begin{align*}
+  WA &= \{\text{lime},\ \text{navy},\ \text{yellow}\};\quad\text{Set of wards}\\
+  R &= W\times D;\quad\text{Set of all days in the roster, to simplify $r+1$ and $r-1$ subscripts}\\
+  \rho &= \text{Poisson constant for discharges}
+\end{align*}
+
+\subsection{Objective Variables}
+
+A is a unimodular matrix determining whether a ward is admitting on a certain day.
+
+$$a_{wa, r} \in \{0,\ 1\} \quad\forall wa\in WA,\ r\in R$$
+
+O is a matrix of each ward's mean expected occupancy for each day in the roster.
+
+$$o_{wa, r} \ge 0 \quad\forall wa\in WA,\ r\in R$$
+
+P is the mean daily admission rate for each day of the week.
+
+$$p_{d} \in Z^+ \quad\forall d\in D$$
+
+$\Delta$ is the maximum pairwise difference between all wards for a given day of the roster.
+
+$$\delta_r \ge 0 \quad\forall r \in R$$
+
+\subsection{Objective Constraints and Objective Function}
+
+These constraints calculate the expected mean occupancy of each ward throughout the 42-day roster. $\%$ is the modulo function and $\ceil{x}$ rounds up to the nearest integer.
+
+Control whether a ward is admitting on a given day of the 6-week cycle. The absolutely insane subscripts adjust for starting week offsets; i.e. on week one, day one, a registrar who started on week 6 will actually be looking at week six, day one of the roster.
+\begin{align}
+  a_{wa, (r+1)\%|W\times D|+1} = \sum_{re\in \{1\dots n_\text{registrars}\}}{x_{\text{A}, \ceil{\frac{r+|D|\text{s}_{wa, re}-1}{|D|}} \% |W|+1, (r-1) \% |D|+1}} \quad\forall wa \in WA,\ r \in R
+\end{align}
+
+Calculate the expected occupancy based on the discounted occupancy from the previous day, plus the previous day's admissions if the ward was admitting. We used a mean stay of 4.5 days to model discharges as a Poisson process with a rate of 0.22.
+\begin{align}
+  o_{wa, r\%|R|+1} = o_{wa, r} \times (1-\rho) + a_{wa, r} \times \dot{p}_{(r-1)\%|D|+1} \quad\forall wa \in WA,\ r \in R
+\end{align}
+
+For each day calculate the maximum pairwise difference, between the most and least occupied wards.
+\begin{align}
+  \delta_r \ge o_{wa, r} - o_{wb, r} \quad\forall r \in W\times D,\ wa \in WA,\ wb \in WA
+\end{align}
+
+Minimize the maximum pairwise occupant difference, summing over all days in the roster.
+\begin{align}
+  \text{minimize} \sum_{r\in R}{\delta_r}
 \end{align}
 
 \end{document}
