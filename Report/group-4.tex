@@ -13,6 +13,7 @@
 \usepackage{listings}
 \usepackage{courier}
 \usepackage{siunitx}
+\usepackage{framed}
 
 %% Sets page size and margins
 \usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
@@ -162,10 +163,13 @@ There are several new definitions that are particular to this section of the for
 \begin{align*}
   WA &= \{\text{lime},\ \text{navy},\ \text{yellow}\};\quad\text{Set of wards}\\
   R &= W\times D;\quad\text{Set of all days in the roster, to simplify $r+1$ and $r-1$ subscripts}\\
-  \rho &= \text{Poisson constant for discharges}
+  \rho &= \text{Poisson constant for discharges}\\
+  s_{wa,re} &\in \{1,\dots,|W|\}, \quad re \in \{1,\dots,n_\text{registrars}\}
 \end{align*}
 
-\subsection{Objective Variables}
+S is the vector of starting weeks for each registrar, where $n_\text{registrars}$ is the number of registrars per ward. S is not a decision variable of the IP; rather, it is enumerated by a tree with 15 unique combinations.
+
+\subsection{Objective-Related Variables}
 
 A is a unimodular matrix determining whether a ward is admitting on a certain day.
 
@@ -175,9 +179,9 @@ O is a matrix of each ward's mean expected occupancy for each day in the roster.
 
 $$o_{wa, r} \ge 0 \quad\forall wa\in WA,\ r\in R$$
 
-P is the mean daily admission rate for each day of the week.
+$\dot{\text{P}}$ is the mean daily admission rate for each day of the week.
 
-$$p_{d} \in Z^+ \quad\forall d\in D$$
+$$\dot{p_{d}} \in Z^+ \quad\forall d\in D$$
 
 $\Delta$ is the maximum pairwise difference between all wards for a given day of the roster.
 
@@ -202,9 +206,17 @@ For each day calculate the maximum pairwise difference, between the most and lea
   \delta_r \ge o_{wa, r} - o_{wb, r} \quad\forall r \in W\times D,\ wa \in WA,\ wb \in WA
 \end{align}
 
-Minimize the maximum pairwise occupant difference, summing over all days in the roster.
+\begin{framed}
+Objective function: Minimize the maximum pairwise occupant difference, summing over all days in the roster.
 \begin{align}
   \text{minimize} \sum_{r\in R}{\delta_r}
 \end{align}
+\end{framed}
+
+\section{Introduction}
+
+Finally, after a lengthy formulation:
+
+This linear program generates feasible rostering solutions with the aim of minimising disparity at any given time between the occupancy of the hospital's wards. 
 
 \end{document}

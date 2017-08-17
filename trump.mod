@@ -79,7 +79,7 @@ s.t. WeekendsOff{w in WEEKS, d in WEEKENDS}:
 
 # no consecutive weekends forced on
 s.t. ConsecutiveWeekendsOff{w in WEEKS}:
-	weekendsOff[w] + weekendsOff[w mod nWeeks + 1] >= 1;
+	weekendsOff[w] + weekendsOff[w mod card(WEEKS) + 1] >= 1;
 	
 # ==============================================================
 # OBJECTIVE CONSTRAINTS
@@ -102,7 +102,7 @@ param startingWeeks {WARDS, 1..nRegistrars};# roster starting week per registrar
 # note: week = ceil(r/card(DAYS))
 # 		day  = (r-1) mod card(DAYS) + 1
 s.t. Admittance {wa in WARDS, r in ROSTERDAYS}:
-	admitting[wa, (r+1) mod totalDays + 1] = sum {re in 1..nRegistrars} schedule['A', ceil((r+7*(startingWeeks[wa, re]-1))/card(DAYS)) mod nWeeks+1, (r-1) mod card(DAYS) + 1];
+	admitting[wa, (r+1) mod totalDays + 1] = sum {re in 1..nRegistrars} schedule['A', ceil((r+7*(startingWeeks[wa, re]-1))/card(DAYS)) mod card(WEEKS)+1, (r-1) mod card(DAYS) + 1];
 	
 # calculate occupancy
 s.t. Occupancy {wa in WARDS, r in ROSTERDAYS}:
