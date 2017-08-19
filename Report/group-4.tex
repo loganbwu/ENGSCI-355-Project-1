@@ -14,6 +14,7 @@
 \usepackage{courier}
 \usepackage{siunitx}
 \usepackage{framed}
+\usepackage{multicol}
 
 %% Sets page size and margins
 \usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
@@ -60,6 +61,13 @@
     {\itshape Department of Engineering Science\par}
     \vspace*{2\baselineskip}
     {\scshape \today} \        {\large The University of Auckland}\par
+    \vspace{\fill}
+    \begin{abstract}
+    In this report, we describe the mixed-integer formulation to balance patient numbers at a hospital by rostering the registrars in each ward. We predict the infinite-horizon mean occupancies of each ward assuming a Poisson distribution of discharges.
+    
+We estimate that our program can reduce the average daily imbalance (the difference in occupancy of the most and least occupied wards each day) by approximately 42\%. We believe most of this effect is due to the equidistant placement of each ward's registrars around the weeks of the roster; however, if this is not possible then our program is necessary to control spikes in ward admissions.
+    \end{abstract}
+    \vspace{\fill}
 \end{titlepage}
 \makeatother
 \pagestyle{fancy}
@@ -217,6 +225,58 @@ Objective function: Minimize the maximum pairwise occupant difference, summing o
 
 Finally, after a lengthy formulation:
 
-This linear program generates feasible rostering solutions with the aim of minimising disparity at any given time between the occupancy of the hospital's wards. 
+This linear program generates feasible rostering solutions with the aim of minimising the mean expected disparity at any given day between the occupancies of the hospital's wards. The program is flexible, easily accommodating different staff arrangements and historical data with small modifications to a data file.
+
+\section{Assumptions}
+
+As the conditions for a feasible roster are given, all assumptions come from how we calculate the mean expected number of patients in each ward.
+
+\subsection{People are Identical}
+
+To calculate the outcome of a roster, we take advantage of symmetry in the problem and take the liberty of adding some when convenient.
+
+We assume that all ward teams act equally and independently, i.e. there is no difference if we swap the Navy and Lime teams. The state of one ward also does not affect the future state of another. Then we assume that all registrars are equal. Both of these are fair assumptions because registrars usually all have the same background and ward teams are separated.
+
+A trickier assumption is that all patients are equal and independent. This allows us to model their stays with a Poisson distribution where the mean stay is 4.5 days. \todo{Add source}In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation.
+
+\subsection{Occupation Numbers are Periodic}
+
+We assume that the mean admission for each day of the week does not change between weeks, so our input data is an average of each day from the past admissions data.
+
+We also assume that patient numbers are periodic over the six-week roster. This avoids any discontinuities and checks that the hospital is not critical (even though by using a memoryless patient model, this is not possible).
+
+\section{Results}
+\begin{table}[H]
+\centering
+\caption{Final optimised roster. Ward 1 registrars begin on weeks 1 and 4; Ward 2 on 2 and 5, and Ward 3 on 3 and 6. Notably, each ward has its registrars three weeks apart.}
+\label{tab:roster}
+\begin{tabular}{r|ccccccc}
+Week & Mon & Tue & Wed & Thu & Fri & Sat & Sun \\
+\hline
+ 1	&O	&A	&P	&O	&N	&N	&N	\\
+ 2	&NO	&NO	&NO	&NO	&ZO	&ZX	&ZX	\\
+ 3	&O	&O	&O	&O	&A	&P	&P	\\
+ 4	&O	&O	&O	&A	&P	&X	&X	\\
+ 5	&A	&P	&A	&P	&O	&A	&A	\\
+ 6	&P	&O	&O	&O	&O	&X	&X	\\
+\end{tabular}
+\end{table}
+\begin{multicols}{2}
+
+By comparing our optimised roster with a series of random, unoptimised rosters (objective function fixed to zero), we see a significant improvement in the daily ward imbalances. On a day-to-day basis using a random roster, the most occupied ward will have approximately 46 people more people than the least occupied. After optimisation, this decreases to 20 for a 42\% improvement. Although not shown, we have discovered that one of the most important strategies is to position a ward's registrars equally spaced around the roster to minimise weekly spikes.
+
+Interestingly (noticed in the raw output), the random unoptimised sample with an identical starting week distribution (equally spaced) to the optimal solution was only 6\% worse. Although this is only one sample, it could indicate that equal registrar spacing is the most important factor.
+
+\begin{figure}[H]
+    \centering\includegraphics[width=\linewidth]{../results/comparison}
+    \caption{Effect of optimisation on day-to-day patient imbalances}
+    \label{fig:comparison}
+\end{figure}
+
+\end{multicols}
+
+\section{Conclusion}
+
+We believe that our optimisation technique can drastically reduce hospital patient imbalances compared to a random roster. If we had more pages, we would like to display the results from our analysis of the contributions from different techniques (the roster itself vs registrar starting weeks). We also cannot include the small amount of sensitivity analysis we performed. However, we note that because we are using predictions for the long-term mean, our figures will be resilient to random fluctuations in admissions.
 
 \end{document}

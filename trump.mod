@@ -112,8 +112,12 @@ s.t. Occupancy {wa in WARDS, r in ROSTERDAYS}:
 s.t. WardDifferenceA {r in ROSTERDAYS, wa in WARDS, wb in WARDS}:
 	wardDiff[r] >= occupancy[wa, r] - occupancy[wb, r];
 	
+s.t. TotalWardDifference:
+	totalWardDiff = sum {r in ROSTERDAYS} wardDiff[r];
+	
 # ==============================================================
 # OBJECTIVE FUNCTION
 # ==============================================================
 
-minimize TotalWardDifference: sum {r in ROSTERDAYS} wardDiff[r];
+minimize ObjectiveOn: sum {r in ROSTERDAYS} wardDiff[r];
+#minimize ObjectiveOff: 0;
