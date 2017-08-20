@@ -65,7 +65,7 @@
     \begin{abstract}
     In this report, we describe the mixed-integer formulation to balance patient numbers at a hospital by rostering the registrars in each ward. We predict the infinite-horizon mean occupancies of each ward assuming a Poisson distribution of discharges.
     
-We estimate that our program can reduce the average daily imbalance (the difference in occupancy of the most and least occupied wards each day) by approximately 42\%. We believe most of this effect is due to the equidistant placement of each ward's registrars around the weeks of the roster; however, if this is not possible then our program is necessary to control spikes in ward admissions.
+We estimate that our program can reduce the average daily imbalance (the difference in patients between the most and least occupied wards each day) by approximately 42\%. We believe most of this effect is due to the equidistant placement of each ward's registrars around the weeks of the roster; however, if this is not possible then our program is necessary to control spikes in ward admissions.
     \end{abstract}
     \vspace{\fill}
 \end{titlepage}
@@ -74,10 +74,11 @@ We estimate that our program can reduce the average daily imbalance (the differe
 
 \section{Formulation}
 
-Our model can be conceptualised as two, linked linear programs. The first is a roster of shifts, and the second one is a cyclical network representing ward occupancies during the 42 days of the roster.
+Our model can be conceptualised as two coupled linear programs. The first is a roster of shifts to ensure feasibility, and the second one is a cyclical network representing ward occupancies during the 42 days of the roster.
 
 \subsection{Parameters}
-
+\begin{multicols}{2}
+\noindent
 \begin{align*}
 S &= \{\text{A, P, N, Z, X, O}\}; \quad\text{Set of shift types}\\
 W &= \{1, \dots, 6\}; \quad\text{Set of weeks in the roster cycle}\\
@@ -85,11 +86,12 @@ D &= \{\text{Mon},\dots,\text{Sun}\}; \quad\text{Set of days in a week}
 \end{align*}
 
 Note that for continuity, a dummy week $0$ and dummy day $\text{Sun}_\text{dummy}$ also exist but are not part of the sets $W$ and $D$.
-
+\end{multicols}
 \subsection{Decision Variables}
 
 $X$ is the array of binary variables determining if a type of shift belongs to a given week and day in the roster:
-$$x_{s, w, d} \in \{0, 1\} \quad\forall s\in S,\  w\in W \cup \{0\},\  d\in D \cup \{\text{Sun}_\text{dummy}\}$$
+
+$$x_{s, w, d} \in \{0, 1\} \quad\forall s\in S,\  w\in W \cup \{0\},\ d\in D \cup \{\text{Sun}_\text{dummy}\}$$
 
 $Y$ determines if a given week in the roster is the night shift week. Note the night shift also includes the final three days of the preceding week:
 $$y_w \in \{0, 1\} \quad\forall w\in W \cup \{\text{Sun}_\text{dummy}\}$$
@@ -179,6 +181,8 @@ S is the vector of starting weeks for each registrar, where $n_\text{registrars}
 
 \subsection{Objective-Related Variables}
 
+\begin{multicols}{2}
+
 A is a unimodular matrix determining whether a ward is admitting on a certain day.
 
 $$a_{wa, r} \in \{0,\ 1\} \quad\forall wa\in WA,\ r\in R$$
@@ -194,6 +198,8 @@ $$\dot{p_{d}} \in Z^+ \quad\forall d\in D$$
 $\Delta$ is the maximum pairwise difference between all wards for a given day of the roster.
 
 $$\delta_r \ge 0 \quad\forall r \in R$$
+
+\end{multicols}
 
 \subsection{Objective Constraints and Objective Function}
 
@@ -221,6 +227,7 @@ Objective function: Minimize the maximum pairwise occupant difference, summing o
 \end{align}
 \end{framed}
 
+\newpage
 \section{Introduction}
 
 Finally, after a lengthy formulation:
@@ -265,7 +272,7 @@ Week & Mon & Tue & Wed & Thu & Fri & Sat & Sun \\
 
 By comparing our optimised roster with a series of random, unoptimised rosters (objective function fixed to zero), we see a significant improvement in the daily ward imbalances. On a day-to-day basis using a random roster, the most occupied ward will have approximately 46 people more people than the least occupied. After optimisation, this decreases to 20 - a 42\% improvement.
 
-Interestingly (noticed in the raw output), the random unoptimised sample with an identical starting week distribution to the optimal solution where registrars are equally spaced was only 6\% worse. Although this is only one sample, it could indicate that equal registrar spacing is the most important factor.
+Interestingly (noticed in the raw output), the random unoptimised sample with an identical starting week distribution to the optimal solution where registrars are equally spaced was only 6\% worse. Although this is only one sample, it could indicate that equal registrar spacing is the most important factor. When registrars are not equally spaced, the unoptimised rosters are around 40\% worse.
 
 \begin{figure}[H]
     \centering\includegraphics[width=\linewidth]{../results/comparison}
