@@ -1,11 +1,11 @@
 Objective: 1158.682527
 Week	Mon	Tue	Wed	Thu	Fri	Sat	Sun
- 1	&O	&O	&O	&O	&A	&P	&P	&\\
- 2	&O	&A	&P	&O	&O	&X	&X	&\\
- 3	&O	&O	&O	&O	&O	&A	&A	&\\
- 4	&P	&O	&O	&O	&O	&X	&X	&\\
- 5	&O	&O	&A	&P	&N	&N	&N	&\\
- 6	&NA	&NP	&NO	&NA	&ZP	&ZX	&ZX	&\\
+ 1	& O	& O	& O	& O	& A	& P	& P	\\
+ 2	& O	& A	& P	& O	& O	& X	& X	\\
+ 3	& O	& O	& O	& O	& O	& A	& A	\\
+ 4	& P	& O	& O	& O	& O	& X	& X	\\
+ 5	& O	& O	& A	& P	& N	& N	& N	\\
+ 6	& NA	& NP	& NO	& NA	& ZP	& ZX	& ZX	\\
 occupancy [*,*] (tr)
 :     LIME      NAVY     YELLOW     :=
 1    60.5325   39.6177   19.9769

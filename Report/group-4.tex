@@ -16,6 +16,8 @@
 \usepackage{framed}
 \usepackage{multicol}
 
+\usepackage[bottom]{footmisc}
+
 %% Sets page size and margins
 \usepackage[a4paper,top=3cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
 \setlength{\parindent}{0pt}
@@ -30,7 +32,6 @@
 \usepackage[colorinlistoftodos]{todonotes}
 \usepackage[colorlinks=true, allcolors=blue]{hyperref}
 \usepackage{algpseudocode}
-
 \usepackage{amsmath}
 \usepackage{amsfonts}
 \usepackage{amssymb}
@@ -82,19 +83,17 @@ Our model can be conceptualised as two coupled linear programs. The first is a r
 \begin{align*}
 S &= \{\text{A, P, N, Z, X, O}\}; \quad\text{Set of shift types}\\
 W &= \{1, \dots, 6\}; \quad\text{Set of weeks in the roster cycle}\\
-D &= \{\text{Mon},\dots,\text{Sun}\}; \quad\text{Set of days in a week}
+D &= \{\text{Mon},\dots,\text{Sun}\}; \quad\text{Set of days in a week}\\
+Y  &= \{0, 0,\dots, 0, 1\}; \quad\text{Night shift on the last week}
 \end{align*}
 
-Note that for continuity, a dummy week $0$ and dummy day $\text{Sun}_\text{dummy}$ also exist but are not part of the sets $W$ and $D$.
+Note that for continuity, a dummy week $0$ and dummy day $\text{Sun}_\text{dummy}$ also exist but are not part of the sets $W$ and $D$. Also, fixing the night shift week takes advantage of symmetry between the weeks.
 \end{multicols}
 \subsection{Decision Variables}
 
 $X$ is the array of binary variables determining if a type of shift belongs to a given week and day in the roster:
 
 $$x_{s, w, d} \in \{0, 1\} \quad\forall s\in S,\  w\in W \cup \{0\},\ d\in D \cup \{\text{Sun}_\text{dummy}\}$$
-
-$Y$ determines if a given week in the roster is the night shift week. Note the night shift also includes the final three days of the preceding week:
-$$y_w \in \{0, 1\} \quad\forall w\in W \cup \{\text{Sun}_\text{dummy}\}$$
 
 $V$ denotes whether registrars are forced to take a weekend off:
 $$v_w \in \{0, 1\} \quad\forall w\in W \cup \{\text{Sun}_\text{dummy}\}$$
@@ -244,7 +243,7 @@ To calculate the outcome of a roster, we take advantage of symmetry in the probl
 
 We assume that all ward teams act equally and independently, i.e. there is no difference if we swap the Navy and Lime teams. The state of one ward also does not affect the future state of another. Then we assume that all registrars are equal. Both of these are fair assumptions because registrars usually all have the same background and ward teams are separated.
 
-A trickier assumption is that all patients are equal and independent. This allows us to model their stays with a Poisson distribution where the mean stay is 4.5 days. \todo{Add source}In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation.
+A trickier assumption is that all patients are equal and independent. This allows us to model their stays with a Poisson distribution where the mean stay is 4.5 days.\footnote{test} \todo{Add source}In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation.
 
 \subsection{Occupation Numbers are Periodic}
 
@@ -260,12 +259,12 @@ We also assume that patient numbers are periodic over the six-week roster. This 
 \begin{tabular}{r|ccccccc}
 Week & Mon & Tue & Wed & Thu & Fri & Sat & Sun \\
 \hline
- 1	&O	&A	&P	&O	&N	&N	&N	\\
- 2	&NO	&NO	&NO	&NO	&ZO	&ZX	&ZX	\\
- 3	&O	&O	&O	&O	&A	&P	&P	\\
- 4	&O	&O	&O	&A	&P	&X	&X	\\
- 5	&A	&P	&A	&P	&O	&A	&A	\\
- 6	&P	&O	&O	&O	&O	&X	&X	\\
+ 1	& O	& O	& O	& O	& A	& P	& P	\\
+ 2	& O	& O	& O	& A	& P	& X	& X	\\
+ 3	& A	& P	& O	& O	& O	& A	& A	\\
+ 4	& P	& O	& O	& O	& O	& X	& X	\\
+ 5	& O	& A	& P	& O	& N	& N	& N	\\
+ 6	& NO	& NO	& NA	& NP	& ZO	& ZX	& ZX	\\
 \end{tabular}
 \end{table}
 \begin{multicols}{2}

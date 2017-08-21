@@ -24,8 +24,9 @@ set NIGHTSHIFTDAYS;
 set RESTSHIFTDAYS;
 
 # decision variables - include dummy weeks/days 0
+param nightShift {{0} union WEEKS} binary default 0;
+
 var schedule {SHIFTS, {0} union WEEKS, {0} union DAYS} binary;
-var nightShift {{0} union WEEKS} binary;
 var weekendsOff {WEEKS} binary;		# no dummy, uses wraparound 'mod' instead
 
 # ==============================================================
