@@ -2,8 +2,8 @@ param nWeeks := 6;
 param nAllowedRests := 3;
 param nRegistrars := 2;	# per ward
 
-set REQSHIFTS := A P N;
-set NONREQSHIFTS := Z X O;
+set REQSHIFTS := A N;
+set NONREQSHIFTS := Z X O P;
 
 set NIGHTSHIFTPREVDAYS := 5 6 7;
 set NIGHTSHIFTDAYS := 1 2 3 4;

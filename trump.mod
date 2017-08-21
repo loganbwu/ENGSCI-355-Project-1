@@ -23,9 +23,9 @@ set NIGHTSHIFTPREVDAYS;
 set NIGHTSHIFTDAYS;
 set RESTSHIFTDAYS;
 
-# decision variables - include dummy weeks/days 0
-param nightShift {{0} union WEEKS} binary default 0;
+param nightShift {{0} union WEEKS} default 0;
 
+# decision variables - include dummy weeks/days 0
 var schedule {SHIFTS, {0} union WEEKS, {0} union DAYS} binary;
 var weekendsOff {WEEKS} binary;		# no dummy, uses wraparound 'mod' instead
 
@@ -43,7 +43,7 @@ s.t. DummyDay {s in SHIFTS, w in WEEKS}:
 s.t. AlwaysShift {w in WEEKS, d in DAYS}:
 	sum {s in SHIFTS} schedule[s, w, d] - nightShift[w] = 1;
 
-# every day has one A/P/N
+# every day has one A/N except for Sunday
 s.t. ReqShift {s in REQSHIFTS, d in DAYS}:
 	sum {w in WEEKS} schedule[s, w, d] = 1;
 	
@@ -117,4 +117,4 @@ s.t. TotalWardDifference:
 # ==============================================================
 
 minimize ObjectiveOn: sum {r in ROSTERDAYS} wardDiff[r];
-#minimize ObjectiveOff: 0;
+minimize ObjectiveOff: 0;

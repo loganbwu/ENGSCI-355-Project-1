@@ -1,6 +1,6 @@
 Objective: 1220.638098
 Week	Mon	Tue	Wed	Thu	Fri	Sat	Sun
- 1	& O	& O	& O	& O	& A	& P	& P	\\
+ 1	& O	& O	& O	& O	& A	& P	& X	\\
  2	& O	& O	& O	& A	& P	& X	& X	\\
  3	& A	& P	& O	& O	& O	& A	& A	\\
  4	& P	& O	& O	& O	& O	& X	& X	\\

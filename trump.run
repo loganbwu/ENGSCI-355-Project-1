@@ -9,10 +9,22 @@ option cplex_options 'mipgap=0';
 
 var runNumber;
 let runNumber := 0;
+var folder;
 var bestObj;
 let bestObj := Infinity;
 # fix nightshift to last week
 let nightShift[nWeeks] := 1;
+
+if 0 then {
+	restore ObjectiveOn;
+	drop ObjectiveOff;
+	let folder := 1;
+}
+else {
+	drop ObjectiveOn;
+	restore ObjectiveOff;
+	let folder := 0;
+}
 
 # enumerate registrar starting weeks
 for {i in {1}} {	# first week doesn't need to change; it is a cycle
@@ -36,33 +48,33 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 
 							# Print the stuff that you need to print
 							# print roster
-							printf "Objective: %f\n", _obj[1] > ("results/"&i&j&"-"&k&l&"-"&m&n&".txt");
+							printf "Objective: %f\n", totalWardDiff > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 							if totalWardDiff < bestObj then {
 								printf "New incumbent: iter %d at %.2f\n", runNumber, totalWardDiff;
 								let bestObj := totalWardDiff;
 							}
-							printf "Week\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n" > ("results/"&i&j&"-"&k&l&"-"&m&n&".txt");
+							printf "Week\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n" > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 							for {w in WEEKS} {
-								printf " %d", w > ("results/"&i&j&"-"&k&l&"-"&m&n&".txt");
+								printf " %d", w > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 								for {d in DAYS} {
-									printf "\t& " > ("results/"&i&j&"-"&k&l&"-"&m&n&".txt");
+									printf "\t& " > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 									for {s in {'N', 'Z'}} {
 										if schedule[s, w, d] > 0 then {
-											printf "%c", s > ("results/"&i&j&"-"&k&l&"-"&m&n&".txt");
+											printf "%c", s > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 										}
 									}
 									for {s in SHIFTS diff {'N', 'Z'}} {
 										if schedule[s, w, d] > 0 then {
-											printf "%c", s > ("results/"&i&j&"-"&k&l&"-"&m&n&".txt");
+											printf "%c", s > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 										}
 									}
 								}
-								printf "\t\\\\\n" > ("results/"&i&j&"-"&k&l&"-"&m&n&".txt");
+								printf "\t\\\\\n" > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 							}
 
 							# print occupancies
 
-							display occupancy > ("results/"&i&j&"-"&k&l&"-"&m&n&".txt");
+							display occupancy > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 						}
 					}
 				}
@@ -71,7 +83,7 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 	}
 }
 
-printf "Best objective: %.2f\n", bestObj;
+printf "Best objective: %.2f in %.2f s\n", bestObj, _total_solve_time;
 
 #solve;
 /*
