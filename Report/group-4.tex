@@ -92,9 +92,7 @@ Note that for continuity, a dummy week $0$ and dummy day $\text{Sun}_\text{dummy
 \subsection{Decision Variables}
 
 $X$ is the array of binary variables determining if a type of shift belongs to a given week and day in the roster:
-
 $$x_{s, w, d} \in \{0, 1\} \quad\forall s\in S,\  w\in W \cup \{0\},\ d\in D \cup \{\text{Sun}_\text{dummy}\}$$
-
 $V$ denotes whether registrars are forced to take a weekend off:
 $$v_w \in \{0, 1\} \quad\forall w\in W \cup \{\text{Sun}_\text{dummy}\}$$
 
@@ -104,63 +102,47 @@ Create a dummy week 0 that is equal to the final week.
 \begin{align}
   x_{s, 0, d} = x_{s, |W|, d} \quad\forall s\in S,\ d\in D
 \end{align}
-
 Create a dummy day 0 that is equal to Sunday of the previous week, allowing wrap-around from Sunday to Monday.
 \begin{align}
   x_{s, w-1, |D|} = x_{s, w, 0} \quad\forall s\in S,\ w\in W
 \end{align}
-
 Ensure every slot has a shift assigned by summing over all shift types, except for the night-shift week which must have two.
 \begin{align}
   \sum_{s\in S} x_{s, w, d} - y_w = 1 \quad\forall w\in W,\ d\in D
 \end{align}
-
 Every day must have a single registrar assigned to each A, P and N shift.
 \begin{align}
   \sum_{w\in W} x_{s, w, d} = 1 \quad\forall s\in \{\text{A, P, N}\},\ d\in D
 \end{align}
-
 Every P shift must follow an A shift, except for Sunday where an A must follow.
 \begin{align}
   x_{\text{P}, w, d} &= x_{\text{A}, w, d-1} \quad\forall w\in W,\ d\in D\\
   x_{\text{A}, w, d} &= x_{\text{A}, w, d-1} \quad\forall w\in W,\ d\in \{\text{Sun}\}
 \end{align}
-
-Setting up the night shift: only one week can be the full `night shift' week.
-\begin{align}
-  \sum_{w\in W} y_w = 1
-\end{align}
-
 The Friday to Sunday before the full night shift week are also night shifts.
 \begin{align}
   x_{\text{N}, w-1, d} - y_w = 0 \quad\forall w\in W,\ d\in \{\text{Fri, Sat, Sun}\}
 \end{align}
-
 The Monday to Thursday of the full night shift week are night shifts.
 \begin{align}
   x_{\text{N}, w, d} - y_w = 0 \quad\forall w\in W,\ d\in \{\text{Mon, Tue, Wed, Thu}\}
 \end{align}
-
 The Friday to Sunday of the full night shift week are sleep shifts.
 \begin{align}
   x_{\text{Z}, w, d} - y_w = 0 \quad\forall w\in W,\ d\in \{\text{Fri, Sat, Sun}\}
 \end{align}
-
 Ensure no one else has a sleep shift and is slacking off!
 \begin{align}
   \sum_{w\in W,\ d\in D} x_{\text{Z}, w, d} = \text{n.o. allowed rests (i.e., 3)}
 \end{align}
-
 To give people weekends off: no weekdays are allowed to be taken off:
 \begin{align}
   x_{\text{X}, w, d} = 0 \quad\forall w\in W,\ d\in \{\text{Mon, \dots, Fri}\}
 \end{align}
-
 Weekends must be taken off if scheduled as a 'weekend off' (but may be taken off on other weekends):
 \begin{align}
   x_{\text{X}, w, d} \ge 0 \quad\forall w\in W,\ d\in \{\text{Sat, Sun}\}
 \end{align}
-
 No two consecutive weekends can pass without a weekend off being forced.
 \begin{align}
   v_w + v_{w-1} \ge 1 \quad\forall w\in W
@@ -173,32 +155,20 @@ There are several new definitions that are particular to this section of the for
   WA &= \{\text{lime},\ \text{navy},\ \text{yellow}\};\quad\text{Set of wards}\\
   R &= W\times D;\quad\text{Set of all days in the roster, to simplify $r+1$ and $r-1$ subscripts}\\
   \rho &= \text{Poisson constant for discharges}\\
-  s_{wa,re} &\in \{1,\dots,|W|\}, \quad re \in \{1,\dots,n_\text{registrars}\}
+  s_{wa,re} &: \text{ See paragraph below}
 \end{align*}
-
-S is the vector of starting weeks for each registrar, where $n_\text{registrars}$ is the number of registrars per ward. S is not a decision variable of the IP; rather, it is enumerated by a tree with 15 unique combinations.
+$s_{wa, re} \in W$ is an array of starting weeks for each registrar in each ward. $s_{wa, re}$ is not a decision variable of the IP; rather, it is like a meta-variable, enumerated by a tree with 15 unique combinations.
 
 \subsection{Objective-Related Variables}
 
-\begin{multicols}{2}
-
 A is a unimodular matrix determining whether a ward is admitting on a certain day.
-
 $$a_{wa, r} \in \{0,\ 1\} \quad\forall wa\in WA,\ r\in R$$
-
 O is a matrix of each ward's mean expected occupancy for each day in the roster.
-
 $$o_{wa, r} \ge 0 \quad\forall wa\in WA,\ r\in R$$
-
 $\dot{\text{P}}$ is the mean daily admission rate for each day of the week.
-
 $$\dot{p_{d}} \in Z^+ \quad\forall d\in D$$
-
 $\Delta$ is the maximum pairwise difference between all wards for a given day of the roster.
-
 $$\delta_r \ge 0 \quad\forall r \in R$$
-
-\end{multicols}
 
 \subsection{Objective Constraints and Objective Function}
 
@@ -208,12 +178,10 @@ Control whether a ward is admitting on a given day of the 6-week cycle. The abso
 \begin{align}
   a_{wa, (r+1)\%|W\times D|+1} = \sum_{re\in \{1\dots n_\text{registrars}\}}{x_{\text{A}, \ceil{\frac{r+|D|\text{s}_{wa, re}-1}{|D|}} \% |W|+1, (r-1) \% |D|+1}} \quad\forall wa \in WA,\ r \in R
 \end{align}
-
 Calculate the expected occupancy based on the discounted occupancy from the previous day, plus the previous day's admissions if the ward was admitting. We used a mean stay of 4.5 days to model discharges as a Poisson process with a rate of 0.22.
 \begin{align}
   o_{wa, r\%|R|+1} = o_{wa, r} \times (1-\rho) + a_{wa, r} \times \dot{p}_{(r-1)\%|D|+1} \quad\forall wa \in WA,\ r \in R
 \end{align}
-
 For each day calculate the maximum pairwise difference, between the most and least occupied wards.
 \begin{align}
   \delta_r \ge o_{wa, r} - o_{wb, r} \quad\forall r \in W\times D,\ wa \in WA,\ wb \in WA

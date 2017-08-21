@@ -52,10 +52,6 @@ s.t. PAfterA {w in WEEKS, d in DAYS diff {7}}:
 	schedule['P', w, d] = schedule['A', w, d-1];
 s.t. AAfterASunday {w in WEEKS, d in {7}}:
 	schedule['A', w, d] = schedule['A', w, d-1];
-
-# only one night shift week in roster
-s.t. OneNightShiftWeek:
-	sum {w in WEEKS} nightShift[w] = 1;
 	
 # create night shift
 # Fri - Sun night shift in previous week
