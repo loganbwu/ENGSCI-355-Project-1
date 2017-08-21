@@ -85,7 +85,7 @@ This linear program generates feasible rostering solutions with the aim of minim
 
 To calculate the outcome of a roster, we take advantage of symmetry in the problem and take the liberty of adding some when convenient.
 
-We assume that all ward teams act equally and independently, i.e. there is no difference if we swap the Navy and Lime teams. The state of one ward also does not affect the future state of another. Then we assume that all registrars are equal. Both of these are fair assumptions because registrars usually all have the same background and ward teams are separated.
+We assume that all ward teams act equally and independently, i.e. there is no difference if we swap the Navy and Lime teams. The state of one ward also does not affect the future state of another. Then we assume that all registrars are equal. Both of these are fair assumptions because registrars usually all have the same background and ward teams are separated, and for three wards with two registrars each reduce the symmetry by $3!\times2!^3$. We can also fix the night shift week, reducing symmetry by 6.
 
 A trickier assumption is that all patients are independent. This allows us to model them with a Poisson distribution where the mean stay is 4.5 days.\footnote{Weiss, A. J. and Elixhauser, A. (2014). \emph{Overview of Hospital Stays in the United States, 2012}.\\Retrieved from \emph{https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf}} In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation.
 
@@ -143,7 +143,7 @@ $W = \{1, \dots, 6\}$ \dotfill Set of weeks in the roster cycle\\
 $D = \{\text{Mon},\dots,\text{Sun}\}$ \dotfill Set of days in a week\\
 $Y  = \{0, 0,\dots, 0, 1\}$ \dotfill Night shift on the last week
 
-Note that for continuity, a dummy week $0$ and dummy day $\text{Sun}_\text{dummy}$ also exist but are not part of the sets $W$ and $D$. Also, fixing the night shift week takes advantage of symmetry between the weeks.
+Note that for continuity, a dummy week $0$ and dummy day $\text{Sun}_\text{dummy}$ before Monday also exist but are not part of the sets $W$ and $D$. Also, fixing the night shift week takes advantage of symmetry between the weeks.
 \end{multicols}
 \subsection{Decision Variables}
 
@@ -206,7 +206,7 @@ No two consecutive weekends can pass without a weekend off being forced.
 
 \subsection{Objective Parameters}
 
-There are several new definitions that are particular to this section of the formulation. This section can be represented as a 42-node cycle with discounted arcs between consecutive nodes, and artificial insertions on admission days.
+There are several new definitions that are particular to this section of the formulation. This section can be represented as a 42-node cycle with discounted arcs between consecutive nodes, and artificial insertions on admission days averaged from the 15-week data.
 
 \begin{multicols}{2}
 \begin{flushright}
