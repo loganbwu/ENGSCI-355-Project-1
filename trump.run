@@ -1,21 +1,17 @@
 reset;
 model trump.mod;
 data trump.dat;
-
-let totalDays := nWeeks * card(DAYS);
-
-option solver cplex;
+option solver gurobi;
 option cplex_options 'mipgap=0';
 
-var runNumber;
-let runNumber := 0;
+var runNumber := 0;
 var folder;
-var bestObj;
-let bestObj := Infinity;
-# fix nightshift to last week
-let nightShift[nWeeks] := 1;
+var bestObj := Infinity;
+let totalDays := nWeeks * card(DAYS);
+let nightShift[nWeeks] := 1;	# put nightshift on last week
 
-if 0 then {
+# turn objective on or off, change output dir
+if 1 then {
 	restore ObjectiveOn;
 	drop ObjectiveOff;
 	let folder := 1;
@@ -42,12 +38,10 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 							let startingWeeks['YELLOW', 2] := n;
 
 							let runNumber := runNumber + 1;
-							printf"\nRun: %d/15\n", runNumber;
+							printf"\nRun:\t%s\t%d/15\n", i&j&'-'&k&l&'-'&m&n, runNumber;
 
 							solve;
 
-							# Print the stuff that you need to print
-							# print roster
 							printf "Objective: %f\n", totalWardDiff > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 							if totalWardDiff < bestObj then {
 								printf "New incumbent: iter %d at %.2f\n", runNumber, totalWardDiff;
@@ -71,9 +65,6 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 								}
 								printf "\t\\\\\n" > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 							}
-
-							# print occupancies
-
 							display occupancy > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 						}
 					}
@@ -87,7 +78,6 @@ printf "Best objective: %.2f in %.2f s\n", bestObj, _total_solve_time;
 
 #solve;
 /*
-# Print the stuff that you need to print
 printf "Roster:\tMon\tTue\tWed\tThu\tFri\tSat\tSun\n";
 for {w in WEEKS} {
 	printf "Week %d\t ", w;

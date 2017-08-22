@@ -37,17 +37,19 @@
 \usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{xcolor}
-\definecolor{navy}{rgb}{0,0,0.5}
+\definecolor{navy}{rgb}{0.2,0.2,1}
+\definecolor{yelloworange}{rgb}{1,0.8,0}
+\definecolor{darklime}{rgb}{0.5,0.8,0}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
 \title{ENGSCI 355 Project 1}
-\author{Andrew Jackson\\Logan Wu\\Scott Sung}
+\author{Logan Wu\\Andrew Jackson\\Scott Sung}
 \makeatletter
 
 \setlength{\parskip}{\baselineskip}
 \fancyhead{}
 \fancyhead[L]{\@title}
-\fancyhead[R]{Jackson, Sung, Wu}
+\fancyhead[R]{Wu, Jackson, Sung}
 \newlength{\drop}
 \begin{document}
 \begin{titlepage}
@@ -68,7 +70,7 @@
     \begin{abstract}
     In this report, we describe the mixed-integer formulation to balance patient numbers at a hospital by rostering the registrars in each ward. We predict the infinite-horizon mean occupancies of each ward assuming a Poisson distribution of discharges.
     
-We estimate that our program can reduce the average daily imbalance (the difference in patients between the most and least occupied wards each day) by approximately 39\%. A pairwise analysis of the results reveals that even in the scenario where registrars cannot change their starting weeks, the optimisation program is still able to significantly reduce imbalances.
+We estimate that our program can reduce the average daily imbalance (the difference in patients between the most and least occupied wards each day) by approximately 39\% compared to a random, unoptimised roster. A pairwise analysis of the results reveals that even in the scenario where registrars cannot change their starting weeks, the optimisation program is still able to significantly reduce imbalances.
     \end{abstract}
     \vspace{\fill}
 \end{titlepage}
@@ -91,24 +93,24 @@ A trickier assumption is that all patients are independent. This allows us to mo
 
 \subsection{Occupation Numbers are Periodic}
 
-We assume that the mean admission for each day of the week does not change between weeks, so our input data is an average of each day from the past admissions data.
+We assume that the mean admission for each day of the week does not change between weeks, so our admissions data is an average of each day from the past 15 weeks.
 
-We also assume that patient numbers are periodic over the six-week roster. This avoids any discontinuities and checks that the hospital is stable (although this is guaranteed using the Poisson patient model).
+We also assume that patient numbers are periodic over the six-week roster. This avoids any discontinuities and checks that the hospital is stable, although this is guaranteed anyway by the Poisson discharge model.
 
 \section{Results}
 \begin{table}[H]
 \centering
-\caption{Final optimised roster. Ward 1 registrars begin on weeks 1 and 4; Ward 2 on 2 and 5, and Ward 3 on 3 and 6. Notably, each ward has its registrars three weeks apart.}
+\caption{Final optimised roster. The colour codes are the initial starting weeks for each registrar. Notably, each ward has its registrars three weeks apart.}
 \label{tab:roster}
 \begin{tabular}{r|ccccccc}
 Week & Mon & Tue & Wed & Thu & Fri & Sat & Sun \\
 \hline
-{\color{lime}$\bullet_1$}	 1	& O	& O	& O	& O	& A	& P	& X	\\
+{\color{darklime}$\bullet_1$}	 1	& O	& O	& O	& O	& A	& P	& X	\\
 {\color{navy}$\bullet_1$}	 2	& O	& O	& O	& A	& P	& X	& X	\\
-{\color{yellow}$\bullet_1$}	 3	& O	& O	& A	& P	& O	& A	& A	\\
-{\color{lime}$\bullet_2$}	 4	& P	& O	& O	& O	& O	& X	& X	\\
+{\color{yelloworange}$\bullet_1$}	 3	& O	& O	& A	& P	& O	& A	& A	\\
+{\color{darklime}$\bullet_2$}	 4	& P	& O	& O	& O	& O	& X	& X	\\
 {\color{navy}$\bullet_2$}	 5	& O	& A	& P	& O	& N	& N	& N	\\
-{\color{yellow}$\bullet_2$}	 6	& NA	& NP	& NO	& NO	& ZO	& ZX	& ZX	\\
+{\color{yelloworange}$\bullet_2$}	 6	& NA	& NP	& NO	& NO	& ZO	& ZX	& ZX	\\
 \end{tabular}
 \end{table}
 
@@ -189,13 +191,13 @@ The Friday to Sunday of the full night shift week are sleep shifts.
 \end{align}
 Ensure no one else has a sleep shift and is slacking off!
 \begin{align}
-  \sum_{w\in W,\ d\in D} x_{\text{Z}, w, d} = \text{n.o. allowed rests (i.e., 3)}
+  \sum_{w\in W,\ d\in D} x_{\text{Z}, w, d} = 3 \text{ (number of allowed rests)}
 \end{align}
-To give people weekends off: no weekdays are allowed to be taken off:
+No weekdays are allowed to be taken off.
 \begin{align}
   x_{\text{X}, w, d} = 0 \quad\forall w\in W,\ d\in \{\text{Mon, \dots, Fri}\}
 \end{align}
-Weekends must be taken off if scheduled as a 'weekend off' (but may be taken off on other weekends):
+Weekends must be taken off if scheduled as a 'weekend off' (but may be taken off on other weekends).
 \begin{align}
   x_{\text{X}, w, d} \ge 0 \quad\forall w\in W,\ d\in \{\text{Sat, Sun}\}
 \end{align}
@@ -216,7 +218,7 @@ $\rho = 0.22$ \dotfill Poisson constant for discharges\\
 $s_{wa,re}$ \dotfill See following paragraph
 \end{flushright}
 
-$s_{wa, re} \in W$ is an array of starting weeks for each registrar in each ward. $s_{wa, re}$ is not a decision variable of the IP; rather, it is like a meta-variable, enumerated by a tree with 15 unique combinations.
+$s_{wa, re} \in W$ is an array of starting weeks for each registrar in each ward. $s_{wa, re}$ is not a decision variable of the IP; rather, it is a meta-variable, enumerated by a tree with 15 unique combinations.
 \end{multicols}
 \subsection{Objective-Related Variables}
 
@@ -247,9 +249,9 @@ For each day calculate the maximum pairwise difference, between the most and lea
 \end{align}
 
 \begin{framed}
-Objective function: Minimize the maximum pairwise occupant difference, summing over all days in the roster.
+Objective function: Minimise the maximum pairwise occupant difference, summing over all days in the roster.
 \begin{align}
-  \text{minimize} \sum_{r\in R}{\delta_r}
+  \text{minimise} \sum_{r\in R}{\delta_r}
 \end{align}
 \end{framed}
 

@@ -1,7 +1,7 @@
 model;
 
 # ==============================================================
-# DATA
+# ROSTER DATA
 # ==============================================================
 
 param nWeeks;
@@ -23,7 +23,7 @@ set NIGHTSHIFTPREVDAYS;
 set NIGHTSHIFTDAYS;
 set RESTSHIFTDAYS;
 
-param nightShift {{0} union WEEKS} default 0;
+param nightShift {{0} union WEEKS} default 0;	# last element set to 1 in .run
 
 # decision variables - include dummy weeks/days 0
 var schedule {SHIFTS, {0} union WEEKS, {0} union DAYS} binary;
