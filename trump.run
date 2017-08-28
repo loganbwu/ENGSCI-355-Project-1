@@ -1,26 +1,42 @@
 reset;
 model trump.mod;
 data trump.dat;
-option solver gurobi;
-option cplex_options 'mipgap=0';
+
+# turn objective on or off, change output dir
+/*
+	folder :
+		0 : objective on, Gurobi
+		1 : objective off, Gurobi
+		2 : objective off, CPLEX
+*/
+var folder := 0;
+
+var optimise := 1;
+
+
+if folder == 0 then {
+	restore ObjectiveOn;
+	drop ObjectiveOff;
+	option solver gurobi;
+	
+}
+else {
+	if folder == 1 then {
+		option solver gurobi;
+	}
+	else {
+		option solver cplex;
+		option cplex_options 'mipgap=0';
+	}
+	drop ObjectiveOn;
+	restore ObjectiveOff;
+	let optimise := 0;
+}
 
 var runNumber := 0;
-var folder;
 var bestObj := Infinity;
 let totalDays := nWeeks * card(DAYS);
 let nightShift[nWeeks] := 1;	# put nightshift on last week
-
-# turn objective on or off, change output dir
-if 1 then {
-	restore ObjectiveOn;
-	drop ObjectiveOff;
-	let folder := 1;
-}
-else {
-	drop ObjectiveOn;
-	restore ObjectiveOff;
-	let folder := 0;
-}
 
 # enumerate registrar starting weeks
 for {i in {1}} {	# first week doesn't need to change; it is a cycle
@@ -42,7 +58,8 @@ for {i in {1}} {	# first week doesn't need to change; it is a cycle
 
 							solve;
 
-							printf "Objective: %f\n", totalWardDiff > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
+							printf "%s\n", solve_message > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
+							printf "objective: %f\noptimise: %s\n", totalWardDiff, optimise > ("results/"&folder&"/"&i&j&"-"&k&l&"-"&m&n&".txt");
 							if totalWardDiff < bestObj then {
 								printf "New incumbent: iter %d at %.2f\n", runNumber, totalWardDiff;
 								let bestObj := totalWardDiff;

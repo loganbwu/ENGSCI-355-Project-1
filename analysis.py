@@ -20,11 +20,19 @@ def readResult(file, section="occupancy"):
     deletables = ['[*,*]', '(tr)', ':=', ';']
     endchar = ';'
     data = []
+    
+    obj = None
+    opt = None
 
     with open(file) as datafile:
         reader = csv.reader(datafile, delimiter=' ', skipinitialspace=True)
         is_reading = False
         for row in reader:
+            # pick out obj
+            if 'objective:' in row:
+                obj = float(row[-1])
+            if 'optimise:' in row:
+                opt = bool(int(row[-1]))
             if is_reading:
                 if row == [endchar]:
                     is_reading = False
@@ -46,9 +54,10 @@ def readResult(file, section="occupancy"):
     
     if section=="occupancy":
         df['delta'] = df.apply(maxDiff, axis=1)
-        df['delta_mean'] = df['delta'].mean()
-        df.objective = df['delta'].sum()
-        df.filename = file.split('/')[-1]
+        df.delta_mean = df['delta'].mean()
+        df.obj = obj
+        df.opt = opt
+        df.arrangement = file.split('/')[-1].split('.')[0]
     return df
 
 
@@ -71,52 +80,64 @@ if __name__ == "__main__":
     
     
     dfs = []
-    for file in glob.glob("results/0/*.txt"):
+    for file in glob.glob("results/*/*.txt"):
         dfs.append(readResult(file))
-    for file in glob.glob("results/2/*.txt"):
-        dfs.append(readResult(file))
-    for i in range(len(dfs)):
-        df = dfs[i]
-        ax1.plot(df['delta'], ls='-', c='C0', alpha=0.2, label='_nolegend_')
-        if i == 0:
-            ax2.plot(df['delta_mean'], ls='--', c='C0', alpha=0.7, label='Unoptimised sample')
-        else:
-            ax2.plot(df['delta_mean'], ls='--', c='C0', alpha=0.3, label='_nolegend_')
-    mean = sum([x['delta_mean'][1] for x in dfs]) / len(dfs)
-    ax2.plot(dfs[0].index.values, np.broadcast_to(mean, dfs[0].index.values.shape),
-            ls='-', lw=2, c='blue', label='Unoptimised mean')
-    ax1.plot([1, 42], [mean, mean],
-            ls='-', lw=2, c='blue', label='_nolegend_')
+        
+    bestobj = np.inf
+    bestdf = None
     
+    for df in dfs:
+        # pick out optimal solution
+        if df.obj < bestobj and df.opt:
+            bestdf = df
+            bestobj = df.obj
+            
+        # plot random solutions
+        if not df.opt:
+            ax1.plot(df['delta'], ls='-', c='C0', alpha=0.25, label='_nolegend_')
+            ax2.axhline(df.delta_mean, ls='-', c='C0', alpha=0.25, label='_nolegend_')
     
-    bestdf = readResult("results/best.txt")
+    # get random mean
+    mean_unopt = np.mean([df.obj for df in dfs if not df.opt])/len(bestdf)
+    ax1.axhline(mean_unopt, ls='-', lw=2, c='blue', label='_nolegend_')
     ax1.plot(bestdf['delta'], c='C1', lw=2, label='_nolegend_')
-    ax2.plot(bestdf['delta_mean'], c='C1', lw=2, label='Optimised')
+    
+    # add dummy to legend
+    ax2.plot(np.NaN, np.NaN, ls='-', c='C0', alpha=1, label='Unoptimised sample')
+    
+    ax2.axhline(mean_unopt, ls='-', lw=2, c='blue', label='Unoptimised mean')
+    ax2.axhline(bestdf.delta_mean, c='C1', lw=2, label='Optimised')
+    
+    # plot formatting
     ax1.set_xlabel('Day')
     ax1.set_ylabel('Daily ward difference')
-    ax2.set_ylabel('Mean daily ward difference')
+    ax2.set_xlabel('Mean')
     leg = ax2.legend(markerfirst=False)
-    leg.get_frame().set_linewidth(1)
     leg.get_frame().set_edgecolor('black')
     fig.suptitle('Comparison Between Optimised and Random Rosters')
 
-    print("Best: %.2f\tMean: %.2f\tDiff:%.2f (%.2f%%)" % (bestdf['delta_mean'][1], mean, mean-bestdf['delta_mean'][1], 100*(bestdf['delta_mean'][1]-mean)/mean))
+    unopt_objs = [df.obj/len(bestdf) for df in dfs if not df.opt]
+    unopt_objs_confint = sms.DescrStatsW(unopt_objs).tconfint_mean()
+    opt_diffs = [bestdf.delta_mean-df.obj/len(bestdf) for df in dfs if not df.opt]
+    opt_confint = sms.DescrStatsW(opt_diffs).tconfint_mean()
+    print("Best: %.2f\tMean: %.2f\tDiff:%.2f (%.2f%%)" % (bestdf.delta_mean, 
+          mean_unopt, mean_unopt-bestdf.delta_mean, 100*(bestdf.delta_mean-mean_unopt)/mean_unopt))
+    print("Improvement confidence interval:", opt_confint)
     
     if save:
         fig.savefig('results/comparison.pdf', bbox_inches='tight')
     
     # Analyse differences per arrangement:
-    pairwise = pd.DataFrame(columns=('filename', 'unopt', 'opt', 'diff', 'pc_diff'))
-    for df in dfs:
-        file1 = glob.glob("results/1/"+df.filename)[0]
-        df0 = df
-        df1 = readResult(file1)
-        mean0 = df0['delta_mean'][1]
-        mean1 = df1['delta_mean'][1]
-        diff = df1.objective - df0.objective
-        pc_diff = 100*diff / df0.objective
-        pairwise.loc[len(pairwise)] = [df.filename, df0.objective, df1.objective, diff, pc_diff]
+    pairwise = pd.DataFrame(columns=('arrangement', 'unopt', 'opt', 'diff', 'pc_diff'))
+    for df_unopt in [df for df in dfs if not df.opt]:
+        # find matching optimised roster
+        df_opt = [df for df in dfs if df.arrangement == df_unopt.arrangement and df.opt][0]
+        mean_unopt = df_unopt.delta_mean
+        mean_opt = df_opt.delta_mean
+        diff = df_opt.obj - df_unopt.obj
+        pc_diff = 100*diff / df_unopt.obj
+        pairwise.loc[len(pairwise)] = [df.arrangement, df_unopt.obj, df_opt.obj, diff, pc_diff]
     
-    print(pairwise)
-    print(sms.DescrStatsW(pairwise['diff']/42).tconfint_mean())
+    print(pairwise.head())
+    print('Pairwise difference confint:', sms.DescrStatsW(pairwise['diff']/42).tconfint_mean())
     
