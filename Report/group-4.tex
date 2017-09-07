@@ -37,9 +37,9 @@
 \usepackage{amssymb}
 \usepackage{mathtools}
 \usepackage{xcolor}
-\definecolor{navy}{rgb}{0.2,0.2,1}
-\definecolor{yelloworange}{rgb}{1,0.8,0}
-\definecolor{darklime}{rgb}{0.5,0.8,0}
+\definecolor{NAVY}{rgb}{0.2,0.2,1}
+\definecolor{YELLOW}{rgb}{1,0.8,0}
+\definecolor{LIME}{rgb}{0.5,0.8,0}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
 \title{ENGSCI 355 Project 1}
@@ -70,7 +70,7 @@
     \begin{abstract}
     In this report, we describe the mixed-integer formulation to balance patient numbers at a hospital by rostering the registrars in each ward. We predict the infinite-horizon mean occupancies of each ward assuming a Poisson distribution of discharges.
     
-We estimate that our program can reduce the average daily imbalance (the difference in patients between the most and least occupied wards each day) by approximately 39\% compared to a random, unoptimised roster. A pairwise analysis of the results reveals that even in the scenario where registrars cannot change their starting weeks, the optimisation program is still able to significantly reduce imbalances.
+We estimate that our program can reduce the average daily imbalance (the difference in patients between the most and least occupied wards each day) by approximately 23\% compared to a random, unoptimised roster. A pairwise analysis of the results reveals that even in the scenario where registrars cannot change their starting weeks, the optimisation program is still able to significantly reduce imbalances.
     \end{abstract}
     \vspace{\fill}
 \end{titlepage}
@@ -89,7 +89,8 @@ To calculate the outcome of a roster, we take advantage of symmetry in the probl
 
 We assume that all ward teams act equally and independently, i.e. there is no difference if we swap the Navy and Lime teams. The state of one ward also does not affect the future state of another. Then we assume that all registrars are equal. Both of these are fair assumptions because registrars usually all have the same background and ward teams are separated, and for three wards with two registrars each, reduce the symmetry by $3!\times2!^3$. We can also fix the night shift week, reducing symmetry by 6.
 
-A trickier assumption is that all patients are independent. This allows us to model them with a Poisson distribution where the mean stay is 4.5 days.\footnote{Weiss, A. J. and Elixhauser, A. (2014). \emph{Overview of Hospital Stays in the United States, 2012}.\\Retrieved from \emph{https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf}} In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation.
+A trickier assumption is that all patients are independent. This allows us to model them with a Poisson distribution where the mean stay is 2.1 days.
+\iffalse\footnote{Weiss, A. J. and Elixhauser, A. (2014). \emph{Overview of Hospital Stays in the United States, 2012}.\\Retrieved from \emph{https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf}}\fi In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation.
 
 \subsection{Occupation Numbers are Periodic}
 
@@ -103,20 +104,20 @@ We also assume that patient numbers are periodic over the six-week roster. This 
 \caption{Final optimised roster. The colour codes are the initial starting weeks for each registrar. Notably, each ward has its registrars three weeks apart.}
 \label{tab:roster}
 \begin{tabular}{r|ccccccc}
-Week & Mon & Tue & Wed & Thu & Fri & Sat & Sun \\
+Week	&Mon	&Tue	&Wed	&Thu	&Fri	&Sat	&Sun	\\
 \hline
-{\color{darklime}$\bullet_1$}	 1	& O	& O	& O	& O	& A	& P	& X	\\
-{\color{navy}$\bullet_1$}	 2	& O	& O	& O	& A	& P	& X	& X	\\
-{\color{yelloworange}$\bullet_1$}	 3	& O	& O	& A	& P	& O	& A	& A	\\
-{\color{darklime}$\bullet_2$}	 4	& P	& O	& O	& O	& O	& X	& X	\\
-{\color{navy}$\bullet_2$}	 5	& O	& A	& P	& O	& N	& N	& N	\\
-{\color{yelloworange}$\bullet_2$}	 6	& NA	& NP	& NO	& NO	& ZO	& ZX	& ZX	\\
+{\color{LIME}$\bullet_1$} 1	& O	& O	& O	& O	& O	& A	& A	\\
+{\color{NAVY}$\bullet_1$} 2	& P	& O	& O	& A	& P	& X	& X	\\
+{\color{YELLOW}$\bullet_1$} 3	& O	& O	& O	& O	& A	& P	& X	\\
+{\color{LIME}$\bullet_2$} 4	& A	& P	& A	& P	& O	& X	& X	\\
+{\color{NAVY}$\bullet_2$} 5	& O	& O	& O	& O	& N	& N	& N	\\
+{\color{YELLOW}$\bullet_2$} 6	& NO	& NA	& NP	& NO	& ZO	& ZX	& ZX	\\
 \end{tabular}
 \end{table}
 
-By comparing a series of random, unoptimised rosters ($N=15\times 2$, obtained by disabling the objective function and using both Gurobi and CPLEX) with our roster (Table \ref{tab:roster}), we observe a significant improvement in the daily ward imbalances (Figure \ref{fig:comparison}). On a day-to-day basis using a random roster, the most occupied ward will have an average of between 42 and 46 people ($\alpha = 0.05$) more people than the least occupied. After optimisation, this decreased to 27 -- an estimated reduction of 15 people or 39\%.
+By comparing a series of random, unoptimised rosters ($N=15\times 2$, obtained by disabling the objective function and using both Gurobi and CPLEX) with our roster (Table \ref{tab:roster}), we observe a significant improvement in the daily ward imbalances (Figure \ref{fig:comparison}). On a day-to-day basis using a random roster, the most occupied ward will have an average of between 34 and 36 people ($\alpha = 0.05$) more people than the least occupied. After optimisation, this decreased to 27 -- an estimated reduction of 8 people or 23\%.
 
-While investigating the relative effects, we found no evidence against the hypothesis that the 1\&4, 2\&5, 3\&6 week arrangement was no better than a random arrangement. However, a pairwise analysis before and after adding the objective function found a difference of between $-17$ and $-13$ people per day when the starting week arrangement was fixed. Even when we cannot manipulate the starting weeks, optimisation still provides a significant improvement.
+While investigating the relative effects, we found no evidence against the hypothesis that the 1\&4, 2\&5, 3\&6 week arrangement was no better than a random arrangement. However, a pairwise analysis before and after adding the objective function found a difference of between $-5$ and $-7$ people per day when the starting week arrangement was fixed. Even when we cannot manipulate the starting weeks, optimisation still provides a significant improvement.
 
 \begin{figure}[h]
     \centering\includegraphics[width=\linewidth]{../results/comparison}
@@ -127,7 +128,7 @@ While investigating the relative effects, we found no evidence against the hypot
 
 \section{Conclusion}
 
-Integer programming can drastically reduce hospital ward imbalances compared to a random roster by between 13 and 17 people on average. With more pages, we would display the output from our pairwise analysis of the contributions from different factors (the roster itself vs registrar starting weeks), which concluded that the improvement is mostly due to rearranging the roster shifts, rather than manipulating the relative positioning of each ward's registrars within the roster. In terms of sensitivity, because we are using predictions for the long-term mean, our figures will be resilient to random fluctuations in admissions.
+Integer programming can drastically reduce hospital ward imbalances compared to a random roster by between 7 and 9 people on average. With more pages, we would display the output from our pairwise analysis of the contributions from different factors (the roster itself vs registrar starting weeks), which concluded that the improvement is mostly due to rearranging the roster shifts, rather than manipulating the relative positioning of each ward's registrars within the roster. In terms of sensitivity, because we are using predictions for the long-term mean, our figures will be resilient to random fluctuations in admissions.
 
 \newpage
 \appendix

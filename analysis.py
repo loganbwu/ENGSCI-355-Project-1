@@ -9,7 +9,7 @@ import matplotlib.gridspec as gridspec
 import glob
 import statsmodels.stats.api as sms
 
-save = False
+save = True
 
 def maxDiff(row):
     max_diff = max(row) - min(row)
@@ -122,6 +122,7 @@ if __name__ == "__main__":
     opt_confint = sms.DescrStatsW(opt_diffs).tconfint_mean()
     print("Best: %.2f\tMean: %.2f\tDiff:%.2f (%.2f%%)" % (bestdf.delta_mean, 
           mean_unopt, mean_unopt-bestdf.delta_mean, 100*(bestdf.delta_mean-mean_unopt)/mean_unopt))
+    print("Random sol confidence interval:", unopt_objs_confint)
     print("Improvement confidence interval:", opt_confint)
     
     if save:
@@ -138,6 +139,7 @@ if __name__ == "__main__":
         pc_diff = 100*diff / df_unopt.obj
         pairwise.loc[len(pairwise)] = [df.arrangement, df_unopt.obj, df_opt.obj, diff, pc_diff]
     
+    print()
     print(pairwise.head())
     print('Pairwise difference confint:', sms.DescrStatsW(pairwise['diff']/42).tconfint_mean())
     

@@ -12,17 +12,6 @@ set RESTSHIFTDAYS := 5 6 7;
 set WEEKDAYS := 1 2 3 4 5;
 set WEEKENDS := 6 7;
 
-/* # ORIGINAL
-param WEEKLYADMISSIONRATE := 
-1	32.4 
-2	30.53
-3	29.13
-4	29.07
-5	29.53
-6	23.13
-7	22.33
- ;*/
-
 param WEEKLYADMISSIONRATE := 
 1	32.4 
 2	30.53
@@ -40,4 +29,4 @@ param startingWeeks (tr) :
 2	4		5		6
  ;
 
-param discountRate := 0.22;		# https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf
+param discountRate := 0.4486;#0.22;		# https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf
