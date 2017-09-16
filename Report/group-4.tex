@@ -215,7 +215,7 @@ There are several new definitions that are particular to this section of the for
 \begin{flushright}
 $WA = \{\text{lime},\ \text{navy},\ \text{yellow}\}$ \dotfill Set of wards\\
 $R = W\times D$ \dotfill Set of all days in the roster, to simplify $r+1$ and $r-1$ subscripts\\
-$\rho = 0.22$ \dotfill Poisson constant for discharges\\
+$\rho = 0.45$ \dotfill Poisson constant for discharges\\
 $s_{wa,re}$ \dotfill See following paragraph
 \end{flushright}
 
@@ -240,7 +240,7 @@ Control whether a ward is admitting on a given day of the 6-week cycle. The abso
 \begin{align}
   a_{wa, (r+1)\%|R|+1} = \sum_{re\in \{1\dots n_\text{registrars}\}}{x_{\text{A}, \ceil{\frac{r+|D|\text{s}_{wa, re}-1}{|D|}} \% |W|+1, (r-1) \% |D|+1}} \quad\forall wa \in WA,\ r \in R
 \end{align}
-Calculate the expected occupancy based on the discounted occupancy from the previous day, plus the previous day's admissions if the ward was admitting. We used a mean stay of 4.5 days to model discharges as a Poisson process with a rate of 0.22.
+Calculate the expected occupancy based on the discounted occupancy from the previous day, plus the previous day's admissions if the ward was admitting. We used a mean stay of 2.1 days to model discharges as a Poisson process with a rate of 0.45.
 \begin{align}
   o_{wa, r\%|R|+1} = o_{wa, r} \times (1-\rho) + a_{wa, r} \times \dot{p}_{(r-1)\%|D|+1} \quad\forall wa \in WA,\ r \in R
 \end{align}

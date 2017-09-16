@@ -9,7 +9,7 @@ import matplotlib.gridspec as gridspec
 import glob
 import statsmodels.stats.api as sms
 
-save = True
+save = False
 
 def maxDiff(row):
     max_diff = max(row) - min(row)
