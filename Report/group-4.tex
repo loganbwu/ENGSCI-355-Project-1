@@ -117,7 +117,7 @@ Week	&Mon	&Tue	&Wed	&Thu	&Fri	&Sat	&Sun	\\
 
 By comparing a series of random, unoptimised rosters ($N=15\times 2$, obtained by disabling the objective function and using both Gurobi and CPLEX) with our roster (Table \ref{tab:roster}), we observe a significant improvement in the daily ward imbalances (Figure \ref{fig:comparison}). On a day-to-day basis using a random roster, the most occupied ward will have an average of between 34 and 36 people ($\alpha = 0.05$) more people than the least occupied. After optimisation, this decreased to 27 -- an estimated reduction of 8 people or 23\%.
 
-While investigating the relative effects, we found no evidence against the hypothesis that the 1\&4, 2\&5, 3\&6 week arrangement was no better than a random arrangement. However, a pairwise analysis before and after adding the objective function found a difference of between $-5$ and $-7$ people per day when the starting week arrangement was fixed. Even when we cannot manipulate the starting weeks, optimisation still provides a significant improvement.
+While investigating the relative effects, we found no evidence against the hypothesis that the 1\&4, 2\&5, 3\&6 week arrangement was no better than a random arrangement. However, a pairwise analysis before and after adding the objective function found a difference of between 5 and 7 fewer people per day when the starting week arrangement was fixed. Even when we cannot manipulate the starting weeks, optimisation still provides a significant improvement.
 
 \begin{figure}[h]
     \centering\includegraphics[width=\linewidth]{../results/comparison}
