@@ -117,7 +117,7 @@ Week	&Mon	&Tue	&Wed	&Thu	&Fri	&Sat	&Sun	\\
 
 By comparing a series of random, unoptimised rosters ($N=15\times 2$, obtained by disabling the objective function and using both Gurobi and CPLEX) with our roster (Table \ref{tab:roster}), we observe a significant improvement in the daily ward imbalances (Figure \ref{fig:comparison}). On a day-to-day basis using a random roster, the most occupied ward will have an average of between 34 and 36 people ($\alpha = 0.05$) more people than the least occupied. After optimisation, this decreased to 27 -- an estimated reduction of 8 people or 23\%.
 
-While investigating the relative effects, we found no evidence against the hypothesis that the 1\&4, 2\&5, 3\&6 week arrangement was no better than a random arrangement. However, a pairwise analysis before and after adding the objective function found a difference of between 5 and 7 fewer people per day when the starting week arrangement was fixed. Even when we cannot manipulate the starting weeks, optimisation still provides a significant improvement.
+While investigating the relative effects, we found no evidence against the hypothesis that the 1\&4, 2\&5, 3\&6 week arrangement was not better than a random arrangement. However, a pairwise analysis before and after adding the objective function (each pair with the same starting week arrangement) found a difference of between 5 and 7 fewer people per day. This shows that even when we cannot optimise the starting weeks as we do using complete enumeration, optimisation still provides a significant improvement.
 
 \begin{figure}[h]
     \centering\includegraphics[width=\linewidth]{../results/comparison}
@@ -128,7 +128,9 @@ While investigating the relative effects, we found no evidence against the hypot
 
 \section{Conclusion}
 
-Integer programming can drastically reduce hospital ward imbalances compared to a random roster by between 7 and 9 people on average. With more pages, we would display the output from our pairwise analysis of the contributions from different factors (the roster itself vs registrar starting weeks), which concluded that the improvement is mostly due to rearranging the roster shifts, rather than manipulating the relative positioning of each ward's registrars within the roster. In terms of sensitivity, because we are using predictions for the long-term mean, our figures will be resilient to random fluctuations in admissions.
+Integer programming can drastically reduce hospital ward imbalances compared to a random roster by between 7 and 9 people on average. With more pages, we would display the output from our pairwise analysis of the contributions from different factors (the roster itself vs registrar starting weeks), which concluded that the improvement is mostly due to rearranging the roster shifts, rather than manipulating the relative positioning of each ward's registrars within the roster.
+
+Because we are using predictions for the \emph{expected} patient numbers, our predictions will be resilient to random fluctuations in admissions.
 
 \newpage
 \appendix
@@ -141,70 +143,70 @@ Our model can be conceptualised as two coupled linear programs. The first is a r
 \noindent
 
 
-$S = \{\text{A, P, N, Z, X, O}\}$ \dotfill Set of shift types\\
-$W = \{1, \dots, 6\}$ \dotfill Set of weeks in the roster cycle\\
-$D = \{\text{Mon},\dots,\text{Sun}\}$ \dotfill Set of days in a week\\
-$Y  = \{0, 0,\dots, 0, 1\}$ \dotfill Night shift on the last week
+$\mathbb{S} = \{\text{A, P, N, Z, X, O}\}$ \dotfill Set of shift types\\
+$\mathbb{W} = \{1, \dots, 6\}$ \dotfill Set of weeks in the roster cycle\\
+$\mathbb{D} = \{\text{Mon},\dots,\text{Sun}\}$ \dotfill Set of days in a week\\
+$\mathbb{Y}  = \{0, 0,\dots, 0, 1\}$ \dotfill Night shift on the last week
 
-Note that for continuity, a dummy week $0$ and dummy day $\text{Sun}_\text{dummy}$ before Monday also exist but are not part of the sets $W$ and $D$. Also, fixing the night shift week takes advantage of symmetry between the weeks.
+For continuity, a dummy week $0$ and dummy day $\text{Sun}_\text{dummy}$ before Monday also exist but are not part of the sets $\mathbb{W}$ and $\mathbb{D}$. Also, fixing the night shift week takes advantage of symmetry between the weeks.
 \end{multicols}
 \subsection{Decision Variables}
 
 $X$ is the array of binary variables determining if a type of shift belongs to a given week and day in the roster:
-$$x_{s, w, d} \in \{0, 1\} \quad\forall s\in S,\  w\in W \cup \{0\},\ d\in D \cup \{\text{Sun}_\text{dummy}\}$$
+$$x_{s, w, d} \in \{0, 1\} \quad\forall s\in \mathbb{S},\  w\in \mathbb{W} \cup \{0\},\ d\in \mathbb{D} \cup \{\text{Sun}_\text{dummy}\}$$
 $V$ denotes whether registrars are forced to take a weekend off:
-$$v_w \in \{0, 1\} \quad\forall w\in W \cup \{\text{Sun}_\text{dummy}\}$$
+$$v_w \in \{0, 1\} \quad\forall w\in \mathbb{W} \cup \{\text{Sun}_\text{dummy}\}$$
 
 \subsection{Constraints}
 
 Create a dummy week 0 that is equal to the final week.
 \begin{align}
-  x_{s, 0, d} = x_{s, |W|, d} \quad\forall s\in S,\ d\in D
+  x_{s, 0, d} = x_{s, |\mathbb{W}|, d} \quad\forall s\in \mathbb{S},\ d\in \mathbb{D}
 \end{align}
 Create a dummy day 0 that is equal to the last day of the previous week, allowing wrap-around from Sunday to Monday.
 \begin{align}
-  x_{s, w-1, |D|} = x_{s, w, 0} \quad\forall s\in S,\ w\in W
+  x_{s, w-1, |\mathbb{D}|} = x_{s, w, 0} \quad\forall s\in \mathbb{S},\ w\in \mathbb{W}
 \end{align}
 Ensure every slot has a shift assigned by summing over all shift types, except for the night-shift week which must have two.
 \begin{align}
-  \sum_{s\in S} x_{s, w, d} - y_w = 1 \quad\forall w\in W,\ d\in D
+  \sum_{s\in \mathbb{S}} x_{s, w, d} - y_w = 1 \quad\forall w\in \mathbb{W},\ d\in \mathbb{D}
 \end{align}
 Every day must have a single registrar assigned to each A, P and N shift.
 \begin{align}
-  \sum_{w\in W} x_{s, w, d} = 1 \quad\forall s\in \{\text{A, P, N}\},\ d\in D
+  \sum_{w\in \mathbb{W}} x_{s, w, d} = 1 \quad\forall s\in \{\text{A, P, N}\},\ d\in \mathbb{D}
 \end{align}
 Every P shift must follow an A shift, except for Sunday where an A must follow an A.
 \begin{align}
-  x_{\text{P}, w, d} &= x_{\text{A}, w, d-1} \quad\forall w\in W,\ d\in D\\
-  x_{\text{A}, w, d} &= x_{\text{A}, w, d-1} \quad\forall w\in W,\ d\in \{\text{Sun}\}
+  x_{\text{P}, w, d} &= x_{\text{A}, w, d-1} \quad\forall w\in \mathbb{W},\ d\in \mathbb{D}\\
+  x_{\text{A}, w, d} &= x_{\text{A}, w, d-1} \quad\forall w\in \mathbb{W},\ d\in \{\text{Sun}\}
 \end{align}
 The Friday to Sunday before the full night shift week are also night shifts.
 \begin{align}
-  x_{\text{N}, w-1, d} - y_w = 0 \quad\forall w\in W,\ d\in \{\text{Fri, Sat, Sun}\}
+  x_{\text{N}, w-1, d} - y_w = 0 \quad\forall w\in \mathbb{W},\ d\in \{\text{Fri, Sat, Sun}\}
 \end{align}
 The Monday to Thursday of the full night shift week are night shifts.
 \begin{align}
-  x_{\text{N}, w, d} - y_w = 0 \quad\forall w\in W,\ d\in \{\text{Mon, Tue, Wed, Thu}\}
+  x_{\text{N}, w, d} - y_w = 0 \quad\forall w\in \mathbb{W},\ d\in \{\text{Mon, Tue, Wed, Thu}\}
 \end{align}
 The Friday to Sunday of the full night shift week are sleep shifts.
 \begin{align}
-  x_{\text{Z}, w, d} - y_w = 0 \quad\forall w\in W,\ d\in \{\text{Fri, Sat, Sun}\}
+  x_{\text{Z}, w, d} - y_w = 0 \quad\forall w\in \mathbb{W},\ d\in \{\text{Fri, Sat, Sun}\}
 \end{align}
 Ensure no one else has a sleep shift and is slacking off!
 \begin{align}
-  \sum_{w\in W,\ d\in D} x_{\text{Z}, w, d} = 3 \text{ (number of allowed rests)}
+  \sum_{w\in W,\ d\in \mathbb{D}} x_{\text{Z}, w, d} = 3 \text{ (number of allowed rests)}
 \end{align}
 No weekdays are allowed to be taken off.
 \begin{align}
-  x_{\text{X}, w, d} = 0 \quad\forall w\in W,\ d\in \{\text{Mon, \dots, Fri}\}
+  x_{\text{X}, w, d} = 0 \quad\forall w\in \mathbb{W},\ d\in \{\text{Mon, \dots, Fri}\}
 \end{align}
 Weekends must be taken off if scheduled as a 'weekend off' (but may be taken off on other weekends).
 \begin{align}
-  x_{\text{X}, w, d} \ge 0 \quad\forall w\in W,\ d\in \{\text{Sat, Sun}\}
+  x_{\text{X}, w, d} \ge 0 \quad\forall w\in \mathbb{W},\ d\in \{\text{Sat, Sun}\}
 \end{align}
 No two consecutive weekends can pass without a weekend off being forced.
 \begin{align}
-  v_w + v_{w-1} \ge 1 \quad\forall w\in W
+  v_w + v_{w-1} \ge 1 \quad\forall w\in \mathbb{W}
 \end{align}
 
 \subsection{Objective Parameters}
@@ -213,46 +215,46 @@ There are several new definitions that are particular to this section of the for
 
 \begin{multicols}{2}
 \begin{flushright}
-$WA = \{\text{lime},\ \text{navy},\ \text{yellow}\}$ \dotfill Set of wards\\
-$R = W\times D$ \dotfill Set of all days in the roster, to simplify $r+1$ and $r-1$ subscripts\\
+$\mathbb{WA} = \{\text{lime},\ \text{navy},\ \text{yellow}\}$ \dotfill Set of wards\\
+$\mathbb{R} = \mathbb{W}\times \mathbb{D}$ \dotfill Set of all days in the roster, to simplify $r+1$ and $r-1$ subscripts\\
 $\rho = 0.45$ \dotfill Poisson constant for discharges\\
 $s_{wa,re}$ \dotfill See following paragraph
 \end{flushright}
 
-$s_{wa, re} \in W$ is an array of starting weeks for each registrar in each ward. $s_{wa, re}$ is not a decision variable of the IP; rather, it is a meta-variable, enumerated by a tree with 15 unique combinations.
+$s_{wa, re} \in \mathbb{W}$ is an array of unique starting weeks for each registrar in each ward. $s_{wa, re}$ is not a decision variable of the IP; rather, it is a meta-variable, enumerated by a tree with 15 unique combinations.
 \end{multicols}
 \subsection{Objective-Related Variables}
 
 A is a unimodular matrix determining whether a ward is admitting on a certain day.
-$$a_{wa, r} \in \{0,\ 1\} \quad\forall wa\in WA,\ r\in R$$
-O is a matrix of each ward's mean expected occupancy for each day in the roster.
-$$o_{wa, r} \ge 0 \quad\forall wa\in WA,\ r\in R$$
-$\dot{\text{P}}$ is the mean daily admission rate for each day of the week.
-$$\dot{p_{d}} \in Z^+ \quad\forall d\in D$$
+$$a_{wa, r} \in \{0,\ 1\} \quad\forall wa\in \mathbb{WA},\ r\in \mathbb{R}$$
+O is a matrix of each ward's \emph{expected} occupancy for each day in the roster (we use expectation values to deal with the stochastic nature of ward numbers).
+$$o_{wa, r} \ge 0 \quad\forall wa\in \mathbb{WA},\ r\in \mathbb{R}$$
+$\dot{\text{P}}$ is the expected daily admission rate for each day of the week.
+$$\dot{p_{d}} \in Z^+ \quad\forall d\in \mathbb{D}$$
 $\Delta$ is the maximum pairwise difference between all wards for a given day of the roster.
-$$\delta_r \ge 0 \quad\forall r \in R$$
+$$\delta_r \ge 0 \quad\forall r \in \mathbb{R}$$
 
 \subsection{Objective Constraints and Objective Function}
 
 These constraints calculate the expected mean occupancy of each ward throughout the 42-day roster. $\%$ is the modulo function and $\ceil{x}$ rounds up to the nearest integer.
 
-Control whether a ward is admitting on a given day of the 6-week cycle. The absolutely insane subscripts adjust for starting week offsets; i.e. on week one, day one, a registrar who started on week 6 will actually be looking at week six, day one of the roster.
+Control whether a ward is admitting on a given day of the 6-week cycle. The absolutely insane subscripts adjust for starting week offsets; i.e. on week one, day one, a registrar who started on week six will actually be looking at week six, day one of the roster.
 \begin{align}
-  a_{wa, (r+1)\%|R|+1} = \sum_{re\in \{1\dots n_\text{registrars}\}}{x_{\text{A}, \ceil{\frac{r+|D|\text{s}_{wa, re}-1}{|D|}} \% |W|+1, (r-1) \% |D|+1}} \quad\forall wa \in WA,\ r \in R
+  a_{wa, (r+1)\%|\mathbb{R}|+1} = \sum_{re\in \{1\dots n_\text{registrars}\}}{x_{\text{A}, \ceil{\frac{r+|\mathbb{D}|\text{s}_{wa, re}-1}{|\mathbb{D}|}} \% |\mathbb{W}|+1, (r-1) \% |\mathbb{D}|+1}} \quad\forall wa \in \mathbb{WA},\ r \in \mathbb{R}
 \end{align}
 Calculate the expected occupancy based on the discounted occupancy from the previous day, plus the previous day's admissions if the ward was admitting. We used a mean stay of 2.1 days to model discharges as a Poisson process with a rate of 0.45.
 \begin{align}
-  o_{wa, r\%|R|+1} = o_{wa, r} \times (1-\rho) + a_{wa, r} \times \dot{p}_{(r-1)\%|D|+1} \quad\forall wa \in WA,\ r \in R
+  o_{wa, r\%|\mathbb{R}|+1} = o_{wa, r} \times (1-\rho) + a_{wa, r} \times \dot{p}_{(r-1)\%|\mathbb{D}|+1} \quad\forall wa \in \mathbb{WA},\ r \in \mathbb{R}
 \end{align}
-For each day calculate the maximum pairwise difference, between the most and least occupied wards.
+For each day calculate the range of ward occupant numbers (the maximum pairwise difference).
 \begin{align}
-  \delta_r \ge o_{wa, r} - o_{wb, r} \quad\forall r \in R,\ wa \in WA,\ wb \in WA
+  \delta_r \ge o_{wa, r} - o_{wb, r} \quad\forall r \in \mathbb{R},\ wa \in \mathbb{WA},\ wb \in \mathbb{WA}
 \end{align}
 
 \begin{framed}
-Objective function: Minimise the maximum pairwise occupant difference, summing over all days in the roster.
+Objective function: Minimise the range of patient numbers, summing over all days in the roster.
 \begin{align}
-  \text{minimise} \sum_{r\in R}{\delta_r}
+  \text{minimise} \sum_{r\in \mathbb{R}}{\delta_r}
 \end{align}
 \end{framed}
 
