@@ -89,7 +89,7 @@ To calculate the outcome of a roster, we take advantage of symmetry in the probl
 
 We assume that all ward teams act equally and independently, i.e. there is no difference if we swap the Navy and Lime teams. The state of one ward also does not affect the future state of another. Then we assume that all registrars are equal. Both of these are fair assumptions because registrars usually all have the same background and ward teams are separated, and for three wards with two registrars each, reduce the symmetry by $3!\times2!^3$. We can also fix the night shift week, reducing symmetry by 6.
 
-A trickier assumption is that all patients are independent. This allows us to model them with a Poisson distribution where the mean stay is 2.1 days.
+A trickier assumption is that all patients are independent and memoryless. This allows us to model them with a Poisson distribution where the mean stay is 2.1 days.
 \iffalse\footnote{Weiss, A. J. and Elixhauser, A. (2014). \emph{Overview of Hospital Stays in the United States, 2012}.\\Retrieved from \emph{https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf}}\fi In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation.
 
 \subsection{Occupation Numbers are Periodic}
