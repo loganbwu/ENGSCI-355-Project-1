@@ -9,7 +9,7 @@ import matplotlib.gridspec as gridspec
 import glob
 import statsmodels.stats.api as sms
 
-save = False
+save = True
 
 def maxDiff(row):
     max_diff = max(row) - min(row)
@@ -126,7 +126,7 @@ if __name__ == "__main__":
     print("Improvement confidence interval:", opt_confint)
     
     if save:
-        fig.savefig('results/comparison.pdf', bbox_inches='tight')
+        fig.savefig('results/comparison.pdf', bbox_inches='tight', pad_inches=0)
     
     # Analyse differences per arrangement:
     pairwise = pd.DataFrame(columns=('arrangement', 'unopt', 'opt', 'diff', 'pc_diff'))

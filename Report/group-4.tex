@@ -15,6 +15,7 @@
 \usepackage{siunitx}
 \usepackage{framed}
 \usepackage{multicol}
+\usepackage[shortlabels]{enumitem}
 
 \usepackage[bottom]{footmisc}
 
@@ -42,7 +43,7 @@
 \definecolor{LIME}{rgb}{0.5,0.8,0}
 \DeclarePairedDelimiter{\ceil}{\lceil}{\rceil}
 
-\title{ENGSCI 355 Project 1}
+\title{On Improving Hospital Service for Americans and Russians}
 \author{Logan Wu\\Andrew Jackson\\Scott Sung}
 \makeatletter
 
@@ -79,27 +80,43 @@ We estimate that our program can reduce the average daily imbalance (the differe
 
 \section{Introduction}
 
-This linear program generates feasible rostering solutions with the aim of minimising the mean expected disparity at any given day between the occupancies of the hospital's wards. The program is flexible, easily accommodating different staff arrangements and historical data with small modifications to a data file.
+This linear program generates feasible rostering solutions with the aim of minimising the expected disparity between the occupancies of the hospital's wards. The program is flexible, easily accommodating different staff arrangements and historical data with small modifications to a data file.
 
 \section{Assumptions}
-
+\begin{multicols}{2}
 \subsection{People are Identical}
 
 To calculate the outcome of a roster, we take advantage of symmetry in the problem and take the liberty of adding some when convenient.
 
-We assume that all ward teams act equally and independently, i.e. there is no difference if we swap the Navy and Lime teams. The state of one ward also does not affect the future state of another. Then we assume that all registrars are equal. Both of these are fair assumptions because registrars usually all have the same background and ward teams are separated, and for three wards with two registrars each, reduce the symmetry by $3!\times2!^3$. We can also fix the night shift week, reducing symmetry by 6.
+We assume that all ward teams act equally and independently, i.e. there is no difference if we swap the Navy and Lime teams. This is a fair assumption because registrars usually all have the same background and ward teams are physically separated.
 
-A trickier assumption is that all patients are independent and memoryless. This allows us to model them with a Poisson distribution where the mean stay is 2.1 days.
-\iffalse\footnote{Weiss, A. J. and Elixhauser, A. (2014). \emph{Overview of Hospital Stays in the United States, 2012}.\\Retrieved from \emph{https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf}}\fi In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation.
+A trickier assumption is that all patients are independent and memoryless. This allows us to model them with a Poisson distribution where the mean stay is 2.1 days (Simulation Project, ENGSCI 355).
+\iffalse\footnote{Weiss, A. J. and Elixhauser, A. (2014). \emph{Overview of Hospital Stays in the United States, 2012}.\\Retrieved from \emph{https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf}}\fi In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation. It also makes the hospital stable, so over a long period of time the number of discharges converges to the number of admissions (everyone is eventually accounted for).
 
+\iffalse
 \subsection{Occupation Numbers are Periodic}
 
 We assume that the mean admission for each day of the week does not change between weeks, so our admissions data is an average of each day from the past 15 weeks.
 
 We also assume that patient numbers are periodic over the six-week roster. This avoids any discontinuities and checks that the hospital is stable, although this is guaranteed anyway by the Poisson discharge model.
+\fi
+\subsection{Admissions and Lengths of Stays are Random}
+
+We assume that there is no trend in the mean admissions between weeks -- even though there will be random fluctuations, numbers will be centered on a mean. This allows us to model admissions as an average of each weekday for the past 15 weeks.
+
+If there is no trend in the length of stay, we can model discharges with a probability distribution. This might be violated, for example, if doctors get faster at treating patients with more experience.
+
+\end{multicols}
+\section{Objective}
+
+We have defined our objective as minimising the average expected disparity between the most and least occupied wards. We average over a looping, 42-day cycle. This estimate gives us a statistical average for the overall perceived difference in ward occupant numbers. We choose to minimise the average over the whole roster rather than the peaks for two reasons:
+\begin{enumerate}[noitemsep, topsep=-6pt]
+\item This objective drives the program to minimise the difference over every single day, rather than focusing only on peak differences; the hospital should notice a constant improvement.
+\item Peaks are far more difficult to control and cannot be reliably reduced ahead of time due to their random nature.
+\end{enumerate}
 
 \section{Results}
-\begin{table}[H]
+\begin{table}[h]
 \centering
 \caption{Final optimised roster. The colour codes are the initial starting weeks for each registrar. Notably, each ward has its registrars three weeks apart.}
 \label{tab:roster}
@@ -115,9 +132,9 @@ Week	&Mon	&Tue	&Wed	&Thu	&Fri	&Sat	&Sun	\\
 \end{tabular}
 \end{table}
 
-By comparing a series of random, unoptimised rosters ($N=15\times 2$, obtained by disabling the objective function and using both Gurobi and CPLEX) with our roster (Table \ref{tab:roster}), we observe a significant improvement in the daily ward imbalances (Figure \ref{fig:comparison}). On a day-to-day basis using a random roster, the most occupied ward will have an average of between 34 and 36 people ($\alpha = 0.05$) more people than the least occupied. After optimisation, this decreased to 27 -- an estimated reduction of 8 people or 23\%.
+By comparing a series of random, unoptimised rosters ($N=30$, obtained by disabling the objective function) with our roster (Table \ref{tab:roster}), we observe a significant improvement in the daily ward imbalances (Figure \ref{fig:comparison}). On a day-to-day basis using a random roster, the most occupied ward will have an average of between 34 and 36 people ($\alpha = 0.05$) more people than the least occupied. After optimisation, this decreased to 27 -- an estimated reduction of 8 people or 23\%.
 
-While investigating the relative effects, we found no evidence against the hypothesis that the 1\&4, 2\&5, 3\&6 week arrangement was not better than a random arrangement. However, a pairwise analysis before and after adding the objective function (each pair with the same starting week arrangement) found a difference of between 5 and 7 fewer people per day. This shows that even when we cannot optimise the starting weeks as we do using complete enumeration, optimisation still provides a significant improvement.
+While investigating the relative effects, we found no evidence that the 1\&4, 2\&5, 3\&6 week arrangement was significant. However, a pairwise analysis before and after adding the objective function (each pair with the same starting week arrangement) found a difference of between 5 and 7 fewer people per day. This shows that even if the starting weeks are fixed, optimisation still provides a significant improvement.
 
 \begin{figure}[h]
     \centering\includegraphics[width=\linewidth]{../results/comparison}
@@ -125,15 +142,28 @@ While investigating the relative effects, we found no evidence against the hypot
     \label{fig:comparison}
 \end{figure}
 
-
 \section{Conclusion}
 
-Integer programming can drastically reduce hospital ward imbalances compared to a random roster by between 7 and 9 people on average. With more pages, we would display the output from our pairwise analysis of the contributions from different factors (the roster itself vs registrar starting weeks), which concluded that the improvement is mostly due to rearranging the roster shifts, rather than manipulating the relative positioning of each ward's registrars within the roster.
+Our program significantly reduce hospital ward imbalances compared to a random roster by between 7 and 9 people on average.
 
-Because we are using predictions for the \emph{expected} patient numbers, our predictions will be resilient to random fluctuations in admissions.
+Because we are using predictions for the expected patient numbers, our method results in a constant, average improvement every day; not only will the hospital notice a general improvement, peak discrepancies will also be lower than before.
 
 \newpage
 \appendix
+\iffalse
+\section{Calculating Expected Number of Patients}
+
+We have been supplied with 15 weeks of exact data detailing admissions and discharges in fine granularity. We use this data to calculate expectation values of admissions, but ignore discharge data in lieu of our own exponential patient discharge model. By doing this, we can generate unbiased statistical estimates for mean admissions on each weekday, which is necessary to calculate average patient numbers.
+
+We first need to look at some expectation identities that have been used implicitly in the formulation. Let X, Y and Z be random variables, such as the population in a ward at any given time or the admissions on any given day:
+\begin{enumerate}
+\item $E[X] \equiv E[\bar{X}]$; the expectation of the random variable is equal to the expectation of its mean. In our model, we sum our expectation values linearly; if $Z= X + Y$,\quad $E[Z] = E[X] + E[Y]$.
+\item We use the fact that we are modelling a time-discounted, infinite horizon stochastic network where $x$ is the probability of a given patient leaving and $x\sim \lambda e^{-\lambda x}$. The ``sample size" -- the number of 42-day rosters to average over -- is $\infty$ when applied to an infinite cycle. Therefore, by the central limit theorem, $E[\bar{x}] \equiv 1/\lambda \implies E[A] \equiv 1/\lambda \equiv \rho$.
+\item Finally, applied to a stochastic, exponentially decaying infinite horizon network, we can say about the expected number of occupants on day $i$: $E[x_i] \equiv (1-\rho) \times E[x_{i-1}] + E[\text{admissions}_{i-1}]$, and this is the formula that appears in Equation 15.
+\end{enumerate}
+
+By approximating patient lengths of stays as exponential and performing calculations in expectation values, we can quickly and efficiently (6 seconds total for 15 enumerations) predict the mean number of patients at any point within the 42-day roster.
+\fi
 \section{Formulation}
 
 Our model can be conceptualised as two coupled linear programs. The first is a roster of shifts to ensure feasibility, and the second one is a cyclical network representing ward occupancies during the 42 days of the roster.
