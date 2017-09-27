@@ -84,7 +84,7 @@ This linear program generates feasible rostering solutions with the aim of minim
 
 \section{Assumptions}
 \begin{multicols}{2}
-\subsection{People are Identical}
+\subsection{Independent, Identically Distributed People}
 
 To calculate the outcome of a roster, we take advantage of symmetry in the problem and take the liberty of adding some when convenient.
 
@@ -100,7 +100,7 @@ We assume that the mean admission for each day of the week does not change betwe
 
 We also assume that patient numbers are periodic over the six-week roster. This avoids any discontinuities and checks that the hospital is stable, although this is guaranteed anyway by the Poisson discharge model.
 \fi
-\subsection{Admissions and Lengths of Stays are Random}
+\subsection{Random Admissions \& Lengths of Stays}
 
 We assume that there is no trend in the mean admissions between weeks -- even though there will be random fluctuations, numbers will be centered on a mean. This allows us to model admissions as an average of each weekday for the past 15 weeks.
 
