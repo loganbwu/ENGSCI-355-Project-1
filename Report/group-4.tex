@@ -86,12 +86,12 @@ This linear program generates feasible rostering solutions with the aim of minim
 \begin{multicols}{2}
 \subsection{Independent, Identically Distributed People}
 
-To calculate the outcome of a roster, we take advantage of symmetry in the problem and take the liberty of adding some when convenient.
+To calculate the outcome of a roster, we take advantage of symmetry in the problem and make assumptions about the lengths of stays.
 
 We assume that all ward teams act equally and independently, i.e. there is no difference if we swap the Navy and Lime teams. This is a fair assumption because registrars usually all have the same background and ward teams are physically separated.
 
 A trickier assumption is that all patients are independent and memoryless. This allows us to model them with a Poisson distribution where the mean stay is 2.1 days (Simulation Project, ENGSCI 355).
-\iffalse\footnote{Weiss, A. J. and Elixhauser, A. (2014). \emph{Overview of Hospital Stays in the United States, 2012}.\\Retrieved from \emph{https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf}}\fi In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a convenient approximation. It also makes the hospital stable, so over a long period of time the number of discharges converges to the number of admissions (everyone is eventually accounted for).
+\iffalse\footnote{Weiss, A. J. and Elixhauser, A. (2014). \emph{Overview of Hospital Stays in the United States, 2012}.\\Retrieved from \emph{https://www.hcup-us.ahrq.gov/reports/statbriefs/sb180-Hospitalizations-United-States-2012.pdf}}\fi In reality this should be a heavy-tail distribution (if a patient is going to stay for a while, they will be there for a \emph{long} time), but the memoryless property is a powerful approximation. It also makes the hospital stable, so over a long period of time the number of discharges converges to the number of admissions (everyone is eventually accounted for).
 
 \iffalse
 \subsection{Occupation Numbers are Periodic}
@@ -144,7 +144,7 @@ While investigating the relative effects, we found no evidence that the 1\&4, 2\
 
 \section{Conclusion}
 
-Our program significantly reduces hospital ward imbalances compared to a random roster by between 7 and 9 people on average. This results in improved in patient care as registrars are more evenly distributed between patients.
+Our program significantly reduces hospital ward imbalances compared to a random roster by between 7 and 9 people on average. This results in improved patient care as registrars are more evenly distributed between patients.
 
 Because we are using predictions for the expected patient numbers, our method results in a constant, average improvement every day; not only will the hospital notice a general improvement, peak discrepancies will also be lower than before.
 
