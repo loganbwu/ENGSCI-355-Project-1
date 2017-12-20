@@ -11,6 +11,27 @@ import statsmodels.stats.api as sms
 
 save = True
 
+def addRosterString(df):
+    rosterList = []
+    wardNums = {'LIME': 1,
+                'NAVY': 2,
+                'YELLOW': 3}
+    for i in range(len(df)):
+        for ward in df.columns.tolist()[:-1]:
+            if df.iloc[(i+1)%len(df)][ward] > df.iloc[i][ward]:
+                # population has increased today
+                rosterList.append(wardNums[ward])
+                break
+    rosterString = ','.join([str(x) for x in rosterList])
+    df.rosterString = rosterString  
+    
+def printRosterStrings(dfs):
+    for df in dfs:
+        addRosterString(df)
+    for i, df in enumerate([df for df in dfs if not df.opt]):
+        print("Roster", i+1)
+        print(df.rosterString)
+
 def maxDiff(row):
     max_diff = max(row) - min(row)
     return max_diff
@@ -68,6 +89,7 @@ if __name__ == "__main__":
     ax1 = fig.add_subplot(gs[0])
     ax2 = fig.add_subplot(gs[1], sharey=ax1)
     ax1.set_xlim([1, 42])
+    ax1.set_ylim([0, 64])
     ax1.xaxis.set_ticks(np.arange(7, 49, 7))
     ax2.yaxis.tick_right()
     ax2.yaxis.set_label_position("right")
